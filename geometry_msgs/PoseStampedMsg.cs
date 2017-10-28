@@ -19,6 +19,12 @@ namespace ROSBridgeLib {
 				_pose = new PoseMsg(msg["pose"]);
 			}
  			
+            public PoseStampedMsg(HeaderMsg header, PoseMsg pose)
+            {
+                _header = header;
+                _pose = pose;
+            }
+
 			public static string GetMessageType() {
 				return "geometry_msgs/PoseStamped";
 			}
