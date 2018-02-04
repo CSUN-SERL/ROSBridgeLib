@@ -3,22 +3,18 @@ using ROSBridgeLib.std_msgs;
 
 namespace ROSBridgeLib.mavros_msgs
 {
-    public class State : ROSBridgeMsg
+    public class StateMsg : ROSBridgeMsg
     {
+        public static readonly string DefaultTopic = "mavros/state";
+        
         public HeaderMsg Header;
         public bool Connected;
         public bool Armed;
         public bool Guided;
         public string Mode;
         public uint SystemStatus;
-
-        public State(HeaderMsg header, string mode)
-        {
-            Header = header;
-            Mode = mode;
-        }
         
-        public State(JSONNode msg)
+        public StateMsg(JSONNode msg)
         {
             Header = new HeaderMsg(msg["header"]);
             Connected = bool.Parse(msg["connected"]);
@@ -35,7 +31,7 @@ namespace ROSBridgeLib.mavros_msgs
         
         public override string ToString()
         {
-            return $"mavros_msgs/State [header={Header}, connected={Connected}, armed={Armed}, guided={Guided}, mode={Mode}, system_status={SystemStatus}]";
+            return $"{GetMessageType()} [header={Header}, connected={Connected}, armed={Armed}, guided={Guided}, mode={Mode}, system_status={SystemStatus}]";
         }
 
         public override string ToYAMLString()
