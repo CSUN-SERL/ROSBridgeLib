@@ -1,7 +1,5 @@
-﻿using System.Runtime.InteropServices;
-using SimpleJSON;
+﻿using SimpleJSON;
 using ROSBridgeLib.std_msgs;
-using UnityEngine;
 
 namespace ROSBridgeLib.sensor_msgs
 {
@@ -115,7 +113,7 @@ namespace ROSBridgeLib.sensor_msgs
         public override string ToYAMLString()
         {
             return $"{{\"header\" : {Header}, \"voltage\" : {Voltage}, \"current\" : {Current}, \"charge\" : {Charge}, \"capacity\" : {Capacity}, \"design_capacity\" : {DesignCapacity}, \"percentage\" : {Percentage}, \"power_supply_status\" : {(int)PowerSupplyStatus}, \"power_supply_health\" : {(int)PowerSupplyHealth}, \"power_supply_technology\" : {(int)PowerSupplyTechnology}, \"present\" : {Present}, \"cell_voltage\" : {CellVoltageToString()}, \"location\" : {Location}, \"serial_number\" : {SerialNumber}}}";                                                                                                                                                                                   
-                 }
+        }
         
         private string CellVoltageToString()
         {
