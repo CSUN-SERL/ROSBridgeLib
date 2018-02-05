@@ -7,12 +7,12 @@ namespace ROSBridgeLib.mavros_msgs
     {
         public static readonly string DefaultTopic = "mavros/state";
         
-        public HeaderMsg Header;
-        public bool Connected;
-        public bool Armed;
-        public bool Guided;
-        public string Mode;
-        public uint SystemStatus;
+        public HeaderMsg Header { get; private set; }
+        public bool Connected { get; private set; }
+        public bool Armed { get; private set; }
+        public bool Guided { get; private set; }
+        public string Mode { get; private set; }
+        public uint SystemStatus { get; private set; }
         
         public StateMsg(JSONNode msg)
         {

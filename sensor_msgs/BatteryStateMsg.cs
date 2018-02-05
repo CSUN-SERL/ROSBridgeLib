@@ -41,31 +41,33 @@ namespace ROSBridgeLib.sensor_msgs
     /// </summary>
     public class BatteryStateMsg : ROSBridgeMsg
     {
-        public HeaderMsg Header;
-        public float Voltage; // [V]
-        public float Current; // [A]
-        public float Charge; // 0..1
-        public float Capacity;
-        public float DesignCapacity;
-        public float Percentage;
-        public PowerSupplyStatus PowerSupplyStatus;
-        public PowerSupplyHealth PowerSupplyHealth;
-        public PowerSupplyTechnology PowerSupplyTechnology;
-        public bool Present;
-        public float[] CellVoltage;
-        public string Location;
-        public string SerialNumber;
+        public HeaderMsg Header { get; private set; }
+        public float Voltage { get; private set; } // [V]
+        public float Current { get; private set; } // [A]
+        public float Charge { get; private set; } // 0..1
+        public float Capacity { get; private set; }
+        public float DesignCapacity { get; private set; }
+        public float Percentage { get; private set; }
+        public PowerSupplyStatus PowerSupplyStatus { get; private set; }
+        public PowerSupplyHealth PowerSupplyHealth { get; private set; }
+        public PowerSupplyTechnology PowerSupplyTechnology { get; private set; }
+        public bool Present { get; private set; }
+        public float[] CellVoltage { get; private set; }
+        public string Location { get; private set; }
+        public string SerialNumber { get; private set; }
 
         public BatteryStateMsg(JSONNode msg)
         {
             Header = new HeaderMsg(msg["header"]);
-            float.TryParse(msg["voltage"], out Voltage);
-            float.TryParse(msg["current"], out Current);
-            float.TryParse(msg["charge"], out Charge);
-            float.TryParse(msg["capacity"], out Capacity);
-            float.TryParse(msg["design_capacity"], out DesignCapacity);
-            float.TryParse(msg["percentage"], out Percentage);
 
+            float f;
+            Voltage = float.TryParse(msg["voltage"], out f) ? f : 0;
+            Current = float.TryParse(msg["current"], out f) ? f : 0;
+            Charge = float.TryParse(msg["charge"], out f) ? f : 0;
+            Capacity = float.TryParse(msg["capacity"], out f) ? f : 0;
+            DesignCapacity = float.TryParse(msg["design_capacity"], out f) ? f : 0;
+            Percentage = float.TryParse(msg["percentage"], out f) ? f : 0;
+            
             int pss;
             if(int.TryParse(msg["power_supply_status"], out pss))
             {
@@ -84,7 +86,8 @@ namespace ROSBridgeLib.sensor_msgs
                 PowerSupplyTechnology = (PowerSupplyTechnology) pst;
             }
 
-            bool.TryParse(msg["present"], out Present);
+            bool present;
+            Present = bool.TryParse(msg["present"], out present) ? present : false;
 
             JSONNode voltageJson = msg["cell_voltage"];
             int count = voltageJson.Count;
@@ -92,8 +95,7 @@ namespace ROSBridgeLib.sensor_msgs
             for (int i = 0; i < count; ++i)
             {
                 float voltage;
-                bool parsed = float.TryParse(voltageJson[i], out voltage);
-                CellVoltage[i] = parsed ? voltage : 0;
+                CellVoltage[i] = float.TryParse(voltageJson[i], out voltage) ? voltage : 0;
             }
 
             Location = msg["location"];
