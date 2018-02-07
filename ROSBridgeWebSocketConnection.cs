@@ -144,6 +144,7 @@ using UnityEngine;
 		 	IsValidPublisher(publisher);
 		 	_publishers.Add (publisher);
 		 }
+		 
 
 		/**
 		 * Connect to the remote ros environment.
