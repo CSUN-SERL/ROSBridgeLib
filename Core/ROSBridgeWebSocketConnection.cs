@@ -43,9 +43,9 @@ using UnityEngine;
 		 }
 	 };
 
-	 private static Dictionary<string, Type> allTopics;
-	 private static Dictionary<string, List<object/*ROSBridgeSubscriber<IMsg>*/>> subscribers;
-	 private static Dictionary<string, Type> advertisements;
+	 private Dictionary<string, Type> allTopics;
+	 private Dictionary<string, ROSBridgeSubscriber> subscribers;
+	 private Dictionary<string, Type> advertisements;
 
 	 private string _host;
 	 private int _port;
@@ -130,11 +130,36 @@ using UnityEngine;
 	 {
 		 _host = host;
 		 _port = port;
+
+		 _ws = null;
 		 _myThread = null;
 		 _subscribers = new List<Type>();
 		 _publishers = new List<Type>();
+
+		 subscribers = new Dictionary<string, ROSBridgeSubscriber>();
+		 advertisements = new Dictionary<string, Type>();
+		 allTopics = new Dictionary<string, Type>();
+		 
 	 }
 
+	 public ROSBridgeSubscriber GetSubscriber(string topic)
+	 {
+		 ROSBridgeSubscriber subscriber;
+		 bool contains;
+		 lock (_queueLock)
+		 {
+			 contains = subscribers.TryGetValue(topic, out subscriber);	 
+		 }
+		 return contains ? subscriber : null;
+	 }
+
+	 public ROSBridgeSubscriber<T> GetSubscriber<T>(string topic) where T: IMsg
+	 {
+		ThrowIfTopicExistsUnderDifferentType(topic, typeof(T), "obtain");
+		return GetSubscriber(topic) as ROSBridgeSubscriber<T>;
+	 }
+	 
+	 
 	 /**
 	  * Add a service response callback to this connection.
 	  */
@@ -179,37 +204,33 @@ using UnityEngine;
 		 }
 	 }
 
-	 public ROSBridgeSubscriber<T> Subscribe<T>(string topic, object callbackOwner, ROSCallback<T> callback) where T : IMsg
+	 private void SendSubscription(string topic, string rosMessageType)
+	 {
+		 string s = ROSBridgeMsg.Subscribe(topic, rosMessageType);
+		 Debug.Log(s);
+		 _ws?.Send(s);
+	 }
+	 
+	 public ROSBridgeSubscriber<T> Subscribe<T>(string topic, ROSCallback<T> callback, int queueSize) where T : IMsg
 	 {
 		 Type messageType = typeof(T);
 		 ThrowIfTopicExistsUnderDifferentType(topic, messageType, "subscribe");
-
-		 List<object> list;
-		 if (!subscribers.TryGetValue(topic, out list))
-		 {
-			 list = new List<object>();
-			 subscribers.Add(topic, list);
-			 CacheTopic(topic, messageType);
-		 }
-
-		 var subscriber = new ROSBridgeSubscriber<T>(topic, callbackOwner, callback);
-		 int count = list.Count;
-		 for (int i = 0; i < count; ++i)
-		 {
-			 if (list[i].Equals(subscriber))
+		 
+		 ROSBridgeSubscriber subscriber;
+//		 lock (_queueLock)
+//		 {
+			 if (!subscribers.TryGetValue(topic, out subscriber))
 			 {
-				 return (ROSBridgeSubscriber<T>)list[i];
+				 subscriber = new ROSBridgeSubscriber<T>(topic, queueSize);
+				 subscribers.Add(topic, subscriber);
+				 CacheTopic(topic, messageType);
+				 SendSubscription(topic, Activator.CreateInstance<T>().ROSMessageType);
 			 }
-		 }
+			 
+			 ((ROSBridgeSubscriber<T>) subscriber).Subscribe(callback);
+		 //}
 
-		 list.Add(subscriber);
-		 return subscriber;
-	 }
-
-
-	 private Action<IMsg> ConvertAction<T>(Action<T> myActionT) where T : IMsg
-	 {
-		 return myActionT == null ? null : new Action<IMsg>(o => myActionT((T)o));
+		 return (ROSBridgeSubscriber <T>) subscriber;
 	 }
 
 	 /**
@@ -217,6 +238,9 @@ using UnityEngine;
 	  */
 	 public void Connect()
 	 {
+		 if (_myThread != null)
+			 return;
+		 
 		 _myThread = new System.Threading.Thread(Run);
 		 _myThread.Start();
 	 }
@@ -242,23 +266,27 @@ using UnityEngine;
 		 _ws.Close();
 	 }
 
-	 private void SendAllSubscriptions()
+	 public void Initialize()
+	 {
+		 _ws = new WebSocket(_host + ":" + _port);
+		 _ws.OnMessage += (sender, e) => this.OnMessage(e.Data);
+		 _ws.Connect();
+	 }
+	 
+	 public void SubscribeAll()
 	 {
 		 var subEnum = subscribers.GetEnumerator();
 		 while(subEnum.MoveNext())
 		 {
-			 var sub = (ROSBridgeSubscriber<IMsg>) subEnum.Current.Value[0];
-			 IMsg t = (IMsg)Activator.CreateInstance(sub.MessageType);
+			 var sub = subEnum.Current.Value;
+			 IMsg msg = (IMsg)Activator.CreateInstance(sub.MessageType);
 			 //_ws.Send(ROSBridgeMsg.Subscribe(GetMessageTopic(p), GetMessageType(p)));
-			 string subscribeOp = ROSBridgeMsg.Subscribe(subEnum.Current.Key, t.ROSMessageType);
-			 _ws.Send(subscribeOp);
-			 //Debug.Log("Sending " + ROSBridgeMsg.Subscribe(GetMessageTopic(p), GetMessageType(p)));
-			 Debug.Log($"Sending {subscribeOp}");
+			SendSubscription(sub.Topic, msg.ROSMessageType);
 		 }
 		 subEnum.Dispose();
 	 }
 
-	 private void SendAllAdvertisements()
+	 public void AdvertiseAll()
 	 {
 //		 foreach (Type p in _publishers)
 //		 {
@@ -277,14 +305,11 @@ using UnityEngine;
 		 enumerator.Dispose();
 	 }
 	 
-	 private void Run()
+	 public void Run()
 	 {
-		 _ws = new WebSocket(_host + ":" + _port);
-		 _ws.OnMessage += (sender, e) => this.OnMessage(e.Data);
-		 _ws.Connect();
-
-		 SendAllSubscriptions();
-		 SendAllAdvertisements();
+		 Initialize();
+		 SubscribeAll();
+		 AdvertiseAll();
 		 
 		 while (true)
 		 {
@@ -292,6 +317,11 @@ using UnityEngine;
 		 }
 	 }
 
+	 private void EnqueueSubscriber(string topic, JSONNode jsonMsg)
+	 {
+		GetSubscriber(topic)?.EnqueueRawMsg(jsonMsg);
+ 	 }
+	 
 	 private void OnMessage(string s)
 	 {
 		 //Debug.Log ("Got a message " + s);
@@ -301,37 +331,38 @@ using UnityEngine;
 			 //Debug.Log ("Parsed it");
 			 string op = node["op"];
 			 //Debug.Log ("Operation is " + op);
-			 if ("publish".Equals(op))
+			 if ("publish".Equals(op)) // recieving a published message from the server
 			 {
 				 string topic = node["topic"];
+				 EnqueueSubscriber(topic, node["msg"]);
 				 //Debug.Log ("Got a message on " + topic);
-				 foreach (Type p in _subscribers)
-				 {
-					 if (topic.Equals(GetMessageTopic(p)))
-					 {
-						 //Debug.Log ("And will parse it " + GetMessageTopic (p));
-						 ROSBridgeMsg msg = ParseMessage(p, node["msg"]);
-						 RenderTask newTask = new RenderTask(p, topic, msg);
-						 lock (_queueLock)
-						 {
-							 bool found = false;
-							 for (int i = 0; i < _taskQ.Count; i++)
-							 {
-								 if (_taskQ[i].getTopic().Equals(topic))
-								 {
-									 _taskQ.RemoveAt(i);
-									 _taskQ.Insert(i, newTask);
-									 found = true;
-									 break;
-								 }
-							 }
-
-							 if (!found)
-								 _taskQ.Add(newTask);
-						 }
-
-					 }
-				 }
+//				 foreach (Type p in _subscribers)
+//				 {
+//					 if (topic.Equals(GetMessageTopic(p)))
+//					 {
+//						 //Debug.Log ("And will parse it " + GetMessageTopic (p));
+//						 ROSBridgeMsg msg = ParseMessage(p, node["msg"]);
+//						 RenderTask newTask = new RenderTask(p, topic, msg);
+//						 lock (_queueLock)
+//						 {
+//							 bool found = false;
+//							 for (int i = 0; i < _taskQ.Count; i++)
+//							 {
+//								 if (_taskQ[i].getTopic().Equals(topic))
+//								 {
+//									 _taskQ.RemoveAt(i);
+//									 _taskQ.Insert(i, newTask);
+//									 found = true;
+//									 break;
+//								 }
+//							 }
+//
+//							 if (!found)
+//								 _taskQ.Add(newTask);
+//						 }
+//
+//					 }
+//				 }
 			 }
 			 else if ("service_response".Equals(op))
 			 {
@@ -348,18 +379,25 @@ using UnityEngine;
 
 	 public void Render()
 	 {
-		 RenderTask newTask = null;
-		 lock (_queueLock)
-		 {
-			 if (_taskQ.Count > 0)
-			 {
-				 newTask = _taskQ[0];
-				 _taskQ.RemoveAt(0);
-			 }
-		 }
+//		 RenderTask newTask = null;
+//		 lock (_queueLock)
+//		 {
+//			 if (_taskQ.Count > 0)
+//			 {
+//				 newTask = _taskQ[0];
+//				 _taskQ.RemoveAt(0);
+//			 }
+//		 }
+//
+//		 if (newTask != null)
+//		 {
+//			 Update(newTask.getSubscriber(), newTask.getMsg());
+//		 }
 
-		 if (newTask != null)
-			 Update(newTask.getSubscriber(), newTask.getMsg());
+		 foreach (var sub in subscribers)
+		 {
+			 GetSubscriber(sub.Key)?.ProcessMsg();
+		 }
 
 		 if (_serviceName != null)
 		 {

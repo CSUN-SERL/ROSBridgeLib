@@ -1,24 +1,21 @@
 ﻿using System;
-using System.CodeDom;
+using System.Collections.Generic;
 using SimpleJSON;
 
 namespace ROSBridgeLib.Core
 {
-    public class ROSBridgeSubscriber <T> where T : IMsg
+    public class ROSBridgeSubscriber
     {
-        private string topic;
-        private object callbackOwner;
-        private ROSCallback<T> callback;
-        private Type messageType;
-
+        protected string topic;
+        protected Type messageType;
+        protected int queueSize;
+        protected Queue<JSONNode> rawMessages; 
+            
+        public event ROSCallback<IMsg> MessageRecieved;
+        
         public string Topic
         {
             get { return topic; }
-        }
-        
-        public object CallbackOwner
-        {
-            get { return callbackOwner; }
         }
 
         public Type MessageType
@@ -26,36 +23,111 @@ namespace ROSBridgeLib.Core
             get { return messageType; }
         }
         
-        public ROSBridgeSubscriber(string topic, object callbackOwner, ROSCallback<T> callback)
-        {
-            
-            this.topic = topic;
-            this.callbackOwner = callbackOwner;
-            this.messageType = typeof(T);
-            Subscribe(callback);
-        }
-        
         public bool Blocked { get; set; }
         
-        public void Unsubscribe()
+        public ROSBridgeSubscriber(string topic, int queueSize, Type messageType)
         {
-            //todo somehow remove this object from the ROSBridgeWebsocketConnection
-            callback = null;
+            this.topic = topic;
+            this.messageType = messageType;
+            this.queueSize = queueSize;
+            rawMessages = new Queue<JSONNode>(queueSize);
+        }
+        
+        public void Unsubscribe(ROSCallback<IMsg> callback)
+        {
+            MessageRecieved -= callback;
+        }
+
+        public void Subscribe(ROSCallback<IMsg> callback)
+        {
+            MessageRecieved += callback;
+        }
+
+        public void EnqueueRawMsg(JSONNode node)
+        {
+            if (rawMessages.Count == queueSize)
+            {
+                rawMessages.Dequeue();
+            }
+            
+            rawMessages.Enqueue(node);
+        }
+        
+        public void ProcessMsg()
+        {
+            if (Blocked || rawMessages.Count == 0)
+                return;
+
+            JSONNode node = rawMessages.Dequeue();
+            
+            IMsg msg = (IMsg)Activator.CreateInstance(messageType);
+            msg.Deserialize(node);
+            MessageRecieved?.Invoke(msg);
+        }
+
+        public override bool Equals(object other)
+        {
+            var otherSub = other as ROSBridgeSubscriber;
+            if (otherSub != null)
+            {
+                return Equals(otherSub);
+            }
+
+            return false;
+        }
+
+        public static bool operator==(ROSBridgeSubscriber lhs, ROSBridgeSubscriber rhs)
+        {
+            return lhs.Equals(rhs);
+        }
+
+        public static bool operator!=(ROSBridgeSubscriber lhs, ROSBridgeSubscriber rhs)
+        {
+            return !lhs.Equals(rhs);
+        }
+        
+        protected bool Equals(ROSBridgeSubscriber<IMsg> other)
+        {
+            if (ReferenceEquals(this, other))
+                return true;
+            
+            if (other != null)
+            {
+                return topic == other.topic;
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (topic != null ? topic.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ Blocked.GetHashCode();
+                return hashCode;
+            }
+        }
+    }
+    
+    public class ROSBridgeSubscriber<T> : ROSBridgeSubscriber where T : IMsg
+    {
+        public new event ROSCallback<T> MessageRecieved;
+
+
+        public ROSBridgeSubscriber(string topic, int queueSize) :
+            base(topic, queueSize, typeof(T))
+        {
+        }
+        
+        public void Unsubscribe(ROSCallback<T> callback)
+        {
+            MessageRecieved -= callback;
         }
 
         public void Subscribe(ROSCallback<T> callback)
         {
-            this.callback = callback;
-        }
-        
-        public void ProcessMsg(JSONNode json)
-        {
-            if (Blocked)
-                return;
-            
-            T msg = Activator.CreateInstance<T>();
-            msg.Deserialize(json);
-            callback?.Invoke(msg);
+            MessageRecieved += callback;
         }
 
         public override bool Equals(object other)
@@ -64,6 +136,19 @@ namespace ROSBridgeLib.Core
             if (otherSub != null)
             {
                 return Equals(otherSub);
+            }
+
+            return false;
+        }
+
+        protected bool Equals(ROSBridgeSubscriber<T> other)
+        {
+            if (ReferenceEquals(this, other))
+                return true;
+            
+            if (other != null)
+            {
+                return topic == other.topic;
             }
 
             return false;
@@ -79,28 +164,11 @@ namespace ROSBridgeLib.Core
             return !lhs.Equals(rhs);
         }
         
-        protected bool Equals(ROSBridgeSubscriber<T> other)
-        {
-            if (ReferenceEquals(this, other))
-                return true;
-            
-            if (other != null)
-            {
-                return topic == other.topic
-                       && callbackOwner == other.callbackOwner
-                       && callback == other.callback;
-            }
-
-            return false;
-        }
-
         public override int GetHashCode()
         {
             unchecked
             {
                 var hashCode = (topic != null ? topic.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (callback != null ? callback.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (callbackOwner != null ? callbackOwner.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ Blocked.GetHashCode();
                 return hashCode;
             }

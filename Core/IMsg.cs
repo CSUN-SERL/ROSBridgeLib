@@ -2,7 +2,7 @@
 
 namespace ROSBridgeLib.Core
 {
-    public delegate void ROSCallback<in T>(T msg) where T : IMsg;	 
+    public delegate void ROSCallback<T>(T msg) where T : IMsg;	 
     
     public interface IMsg
     {
