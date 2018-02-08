@@ -27,9 +27,14 @@ public abstract class ROSBridgeMsg : IMsg  {
 	public ROSBridgeMsg() {}
 	
 	public abstract string ROSMessageType { get; }
-	public abstract void Deserialize(JSONNode json);
+	public abstract void Deserialize(JSONNode node);
 	public abstract string ToYAMLString();
 
+	public static ROSCallback<IMsg> ConvertCallback<T>(ROSCallback<T> callback) where T : IMsg
+	{
+		return callback == null ? null : new ROSCallback<IMsg>(o => callback((T)o));
+	}
+	
 	public static string Advertise(string messageTopic, string messageType) {
 		return "{\"op\": \"advertise\", \"topic\": \"" + messageTopic + "\", \"type\": \"" + messageType + "\"}";
 	}
@@ -42,9 +47,9 @@ public abstract class ROSBridgeMsg : IMsg  {
 		return "{\"op\": \"publish\", \"topic\": \"" + messageTopic + "\", \"msg\": " + message + "}";
 	}
 	
-	public static string Subscribe(string messageTopic) {
-		return "{\"op\": \"subscribe\", \"topic\": \"" + messageTopic +  "\"}";
-	}
+//	public static string Subscribe(string messageTopic) {
+//		return "{\"op\": \"subscribe\", \"topic\": \"" + messageTopic +  "\"}";
+//	}
 	
 	public static string Subscribe(string messageTopic, string messageType) {
 		return "{\"op\": \"subscribe\", \"topic\": \"" + messageTopic +  "\", \"type\": \"" + messageType + "\"}";

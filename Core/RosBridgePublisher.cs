@@ -3,20 +3,42 @@ using WebSocketSharp;
 
 namespace ROSBridgeLib.Core
 {
-    public class ROSBridgePublisher<T> where T : IMsg
+    public class ROSBridgePublisher
     {
-        private WebSocket socket;
-        private string topic;
+        protected WebSocket socket;
+        protected string topic;
+        protected Type messageType;
+        
+        public Type MessageType
+        {
+            get { return messageType; }
+        }
 
-        public Type MessageType{ get { return typeof(T); } }
+        public string Topic
+        {
+            get { return topic; }
+        }
 
-        public ROSBridgePublisher(WebSocket socket, string topic)
+        public ROSBridgePublisher(WebSocket socket, string topic, Type messageType)
         {
             this.socket = socket;
             this.topic = topic;
+            this.messageType = messageType;
         }
 
         public void Publish(IMsg msg)
+        {
+            socket.Send(ROSBridgeMsg.Publish(topic, msg.ToYAMLString()));
+        }
+    }
+    
+    public class ROSBridgePublisher<T> : ROSBridgePublisher where T : IMsg
+    {
+        public ROSBridgePublisher(WebSocket socket, string topic) 
+            : base(socket, topic, typeof(T))
+        { }
+
+        public void Publish(T msg)
         {
             socket.Send(ROSBridgeMsg.Publish(topic, msg.ToYAMLString()));
         }

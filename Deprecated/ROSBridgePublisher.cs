@@ -14,6 +14,7 @@ using SimpleJSON;
  * @version 3.1
  */
 
+//namespace ROSBridgeLib.Deprecated {
 namespace ROSBridgeLib {
 	public class ROSBridgePublisher {
 		

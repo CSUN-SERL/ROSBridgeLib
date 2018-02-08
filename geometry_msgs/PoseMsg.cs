@@ -46,10 +46,10 @@ namespace ROSBridgeLib {
 				get { return "geometry_msgs/Pose"; }
 			}
 
-			public override void Deserialize(JSONNode json)
+			public override void Deserialize(JSONNode node)
 			{
-				_position = new PointMsg(json["position"]);
-				_orientation = new QuaternionMsg(json["orientation"]);
+				_position = new PointMsg(node["position"]);
+				_orientation = new QuaternionMsg(node["orientation"]);
 			}
 
 			public override string ToYAMLString() {

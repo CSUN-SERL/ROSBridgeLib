@@ -46,10 +46,10 @@ namespace ROSBridgeLib {
 				get { return "geometry_msgs/PoseStamped"; }
 			}
 
-			public override void Deserialize(JSONNode msg)
+			public override void Deserialize(JSONNode node)
 			{
-				_header = new HeaderMsg(msg["header"]);
-				_pose = new PoseMsg(msg["pose"]);
+				_header = new HeaderMsg(node["header"]);
+				_pose = new PoseMsg(node["pose"]);
 			}
 
 			public override string ToYAMLString() {

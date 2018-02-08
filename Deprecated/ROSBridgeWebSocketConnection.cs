@@ -28,7 +28,8 @@ using UnityEngine;
  * @version 3.1
  */
 
- namespace ROSBridgeLib {
+// namespace ROSBridgeLib.Deprecated {
+namespace ROSBridgeLib{
  	public class ROSBridgeWebSocketConnection {
  		private class RenderTask {
  			private Type _subscriber;
