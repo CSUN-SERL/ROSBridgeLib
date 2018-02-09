@@ -18,7 +18,7 @@ using UnityEngine;
 	 
 	 private Dictionary<string, Type> allTopics;
 	 private Dictionary<string, ROSBridgeSubscriber> subscribers;
-	 private Dictionary<string, ROSBridgePublisher> advertisers;
+	 private Dictionary<string, ROSBridgePublisher> publishers;
 	 
 	 private Type _serviceResponse; // to deal with service responses
 	 private string _serviceName = null;
@@ -44,8 +44,6 @@ using UnityEngine;
 	 /// Make a connection to a host/port. 
 	 /// This does not actually start the connection, use Connect to do that.
 	 /// </summary>
-	 /// <param name="host"></param>
-	 /// <param name="port"></param>
 	 public ROSBridgeWebSocketConnection(string host, int port)
 	 {
 		 _host = host;
@@ -55,17 +53,21 @@ using UnityEngine;
 		 _myThread = null;
 		 
 		 subscribers = new Dictionary<string, ROSBridgeSubscriber>();
-		 advertisers = new Dictionary<string, ROSBridgePublisher>();
+		 publishers = new Dictionary<string, ROSBridgePublisher>();
 		 allTopics = new Dictionary<string, Type>();
 		 
 	 }
 
+	 public ROSBridgePublisher GetPublisher(string topic)
+	 {
+		 ROSBridgePublisher publisher;
+		 return publishers.TryGetValue(topic, out publisher) ? publisher : null;
+	 }
+	 
 	 public ROSBridgeSubscriber GetSubscriber(string topic)
 	 {
 		 ROSBridgeSubscriber subscriber;
-		 bool contains;
-		 contains = subscribers.TryGetValue(topic, out subscriber);	 
-		 return contains ? subscriber : null;
+		 return subscribers.TryGetValue(topic, out subscriber) ? subscriber : null;
 	 }
 
 	 public ROSBridgeSubscriber<T> GetSubscriber<T>(string topic) where T: IMsg
@@ -92,26 +94,26 @@ using UnityEngine;
 			 if (type != messageType)
 			 {
 				 throw new Exception(
-					 $"Topic: {topic} already exists for message type: {messageType}. You are attempting to {operation} on the same topic with message type {type}");
+					 $"Topic: {topic} already exists for message type: {messageType}. You are attempting to {operation} same topic with message type {type}");
 			 }
 		 }
 	 }
 
-	 public ROSBridgePublisher<T> Advertise<T>(string topic) where T : IMsg
+	 public ROSBridgePublisher Advertise<T>(string topic) where T : IMsg
 	 {
 		 Type messageType = typeof(T);
 		 ThrowIfTopicExistsUnderDifferentType(topic, messageType, "advertise");
 
 		 ROSBridgePublisher publisher;
-		 if (!advertisers.TryGetValue(topic, out publisher))
+		 if (!publishers.TryGetValue(topic, out publisher))
 		 {
-			 publisher = new ROSBridgePublisher<T>(_ws, topic);
-			 advertisers.Add(topic, publisher);
+			 publisher = new ROSBridgePublisher(_ws, topic, messageType);
+			 publishers.Add(topic, publisher);
 			 CacheTopic(topic, messageType);
 			 SendAdvertiseOperation(publisher);
 		 }
 		 
-		 return (ROSBridgePublisher<T>) publisher;
+		 return publisher;
 	 }
 
 	 private void CacheTopic(string topic, Type messageType)
@@ -152,10 +154,18 @@ using UnityEngine;
 			 return;
 		 
 		 Initialize();
-		 SubscribeAll();
-		 AdvertiseAll();
 		 
-		 _myThread = new System.Threading.Thread(Run);
+		 foreach (var sub in subscribers)
+		 {
+			 SendSubscribeOperation(sub.Value);
+		 }
+
+		 foreach (var pub in publishers)
+		 {
+			 SendAdvertiseOperation(pub.Value);
+		 }
+		 
+		 _myThread = new Thread(Run);
 		 _myThread.Start();
 	 }
 
@@ -171,7 +181,7 @@ using UnityEngine;
 			 SendUnSubscribeOperation(subscriber.Value);
 		 }
 
-		 foreach (var publisher in advertisers)
+		 foreach (var publisher in publishers)
 		 {
 			 SendUnAdvertiseOperation(publisher.Value);
 		 }
@@ -184,28 +194,6 @@ using UnityEngine;
 		 _ws = new WebSocket(_host + ":" + _port);
 		 _ws.OnMessage += OnMessage;
 		 _ws.Connect();
-	 }
-	 
-	 public void SubscribeAll()
-	 {
-		 var subEnum = subscribers.GetEnumerator();
-		 while(subEnum.MoveNext())
-		 {
-			 ROSBridgeSubscriber subscriber = subEnum.Current.Value;
-			 SendSubscribeOperation(subscriber);
-		 }
-		 subEnum.Dispose();
-	 }
-
-	 public void AdvertiseAll()
-	 {
-		 var pubEnum = advertisers.GetEnumerator();
-		 while (pubEnum.MoveNext())
-		 {
-			 var publisher = pubEnum.Current.Value;
-			 SendAdvertiseOperation(publisher);
-		 }
-		 pubEnum.Dispose();
 	 }
 	 
 	 public void Run()
@@ -252,7 +240,7 @@ using UnityEngine;
 		 {
 			 foreach (var sub in subscribers)
 			 {
-				 GetSubscriber(sub.Key)?.ProcessOldestMsg();
+				 sub.Value.ProcessOldestMsg();
 			 }	 
 		 }
 

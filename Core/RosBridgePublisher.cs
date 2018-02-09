@@ -31,16 +31,4 @@ namespace ROSBridgeLib.Core
             socket.Send(ROSBridgeMsg.Publish(topic, msg.ToYAMLString()));
         }
     }
-    
-    public class ROSBridgePublisher<T> : ROSBridgePublisher where T : IMsg
-    {
-        public ROSBridgePublisher(WebSocket socket, string topic) 
-            : base(socket, topic, typeof(T))
-        { }
-
-        public void Publish(T msg)
-        {
-            socket.Send(ROSBridgeMsg.Publish(topic, msg.ToYAMLString()));
-        }
-    }
 }

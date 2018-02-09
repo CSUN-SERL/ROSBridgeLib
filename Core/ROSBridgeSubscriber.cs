@@ -83,11 +83,7 @@ namespace ROSBridgeLib.Core
 
         public void Subscribe(ROSCallback<T> callback)
         {
-//            var list = MessageRecieved.GetInvocationList();
-//            if (!list.Contains(callback))
-//            {
-                MessageRecieved += callback;   
-//            }
+            MessageRecieved += callback;   
         }
         
         protected override void ProcessMsg(IMsg msg)
