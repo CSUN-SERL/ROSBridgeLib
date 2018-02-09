@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Text;
-using SimpleJSON;
+﻿using SimpleJSON;
 
 /**
  * Define a geometry_msgs pose message. This has been hand-crafted from the corresponding
@@ -11,10 +9,17 @@ using SimpleJSON;
 
 namespace ROSBridgeLib {
 	namespace geometry_msgs {
-		public class PoseMsg : ROSBridgeMsg {
+		public class PoseMsg : Core.ROSBridgeMsg {
 			public PointMsg _position;
 			public QuaternionMsg _orientation;
 
+			public override string ROSMessageType
+			{
+				get { return "geometry_msgs/Pose"; }
+			}
+			
+			public PoseMsg() { }
+			
 			public PoseMsg(JSONNode msg) {
                 _position = new PointMsg(msg["position"]);
                 _orientation = new QuaternionMsg(msg["orientation"]);
@@ -24,10 +29,6 @@ namespace ROSBridgeLib {
                 _position = p;
                 _orientation = q;
             }
-			
-			public static string getMessageType() {
-				return "geometry_msgs/Pose";
-			}
 
 			public PointMsg GetPosition() {
 				return _position;
@@ -36,9 +37,15 @@ namespace ROSBridgeLib {
 			public QuaternionMsg GetOrientation() {
 				return _orientation;
 			}
-			
+
+			public override void Deserialize(JSONNode msg)
+			{
+				_position = new PointMsg(msg["position"]);
+				_orientation = new QuaternionMsg(msg["orientation"]);
+			}
+
 			public override string ToString() {
-				return "geometry_msgs/Pose [position=" + _position.ToString() + ",  orientation=" + _orientation.ToString() + "]";
+				return ROSMessageType + " [position=" + _position.ToString() + ",  orientation=" + _orientation.ToString() + "]";
 			}
 			
 			public override string ToYAMLString() {

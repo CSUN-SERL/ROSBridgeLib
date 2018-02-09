@@ -1,7 +1,5 @@
-using System.Collections;
-using System.Text;
 using SimpleJSON;
-using UnityEngine;
+using ROSBridgeLib.Core;
 
 /* 
  * @brief ROSBridgeLib
@@ -12,6 +10,13 @@ namespace ROSBridgeLib {
 	namespace std_msgs {
 		public class Float32Msg : ROSBridgeMsg {
 			private float _data;
+
+			public override string ROSMessageType
+			{
+				get { return "std_msgs/Float32"; }
+			}
+			
+			public Float32Msg(){ }			
 			
 			public Float32Msg(JSONNode msg) {
 				_data = float.Parse(msg);
@@ -21,18 +26,19 @@ namespace ROSBridgeLib {
 				_data = data;
 			}
 			
-			public static string GetMessageType() {
-				return "std_msgs/Float32";
-			}
-			
 			public float GetData() {
 				return _data;
 			}
 			
-			public override string ToString() {
-				return "Float32 [data=" + _data.ToString() + "]";
+			public override void Deserialize(JSONNode msg)
+			{
+				_data = float.Parse(msg);
 			}
 			
+			public override string ToString() {
+				return ROSMessageType + " [data=" + _data.ToString() + "]";
+			}
+
 			public override string ToYAMLString() {
 				return "{\"data\" : " + _data.ToString() + "}";
 			}

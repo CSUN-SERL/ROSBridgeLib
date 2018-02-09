@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Text;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 
 /* 
@@ -12,6 +11,13 @@ namespace ROSBridgeLib {
 		public class UInt8Msg : ROSBridgeMsg {
 			private byte _data;
 			
+			public override string ROSMessageType
+			{
+				get{ return "std_msgs/UInt8"; }
+			}
+			
+			public UInt8Msg(){}
+			
 			public UInt8Msg(JSONNode msg) {
 				_data = byte.Parse(msg);
 			}
@@ -20,18 +26,19 @@ namespace ROSBridgeLib {
 				_data = data;
 			}
 			
-			public static string GetMessageType() {
-				return "std_msgs/UInt8";
-			}
-			
 			public byte GetData() {
 				return _data;
 			}
 			
-			public override string ToString() {
-				return "UInt8 [data=" + _data + "]";
+			public override void Deserialize(JSONNode msg)
+			{
+				_data = byte.Parse(msg);
 			}
 			
+			public override string ToString() {
+				return ROSMessageType + " [data=" + _data + "]";
+            }
+
 			public override string ToYAMLString() {
 				return "{\"data\" : " + _data + "}";
 			}

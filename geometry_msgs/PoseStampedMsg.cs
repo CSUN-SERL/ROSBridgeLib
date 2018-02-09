@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Text;
 using SimpleJSON;
 using ROSBridgeLib.std_msgs;
 
@@ -10,9 +8,16 @@ using ROSBridgeLib.std_msgs;
 
 namespace ROSBridgeLib {
 	namespace geometry_msgs {
-		public class PoseStampedMsg : ROSBridgeMsg {
-			public HeaderMsg _header;
-			public PoseMsg _pose;
+		public class PoseStampedMsg : Core.ROSBridgeMsg {
+			private HeaderMsg _header;
+			private PoseMsg _pose;
+			
+			public override string ROSMessageType
+			{
+				get { return "geometry_msgs/PoseStamped"; }
+			}
+			
+			public PoseStampedMsg() {}
 			
 			public PoseStampedMsg(JSONNode msg) {
 				_header = new HeaderMsg(msg["header"]);
@@ -25,10 +30,6 @@ namespace ROSBridgeLib {
                 _pose = pose;
             }
 
-			public static string GetMessageType() {
-				return "geometry_msgs/PoseStamped";
-			}
-			
 			public HeaderMsg GetHeader() {
 				return _header;
 			}
@@ -37,10 +38,16 @@ namespace ROSBridgeLib {
 				return _pose;
 			}
 			
-			public override string ToString() {
-				return "PoseStamped [header=" + _header.ToString() + ",  pose=" + _pose.ToString() + "]";
+			public override void Deserialize(JSONNode msg)
+			{
+				_header = new HeaderMsg(msg["header"]);
+				_pose = new PoseMsg(msg["pose"]);
 			}
 			
+			public override string ToString() {
+				return ROSMessageType + "  [header=" + _header.ToString() + ",  pose=" + _pose.ToString() + "]";
+			}
+
 			public override string ToYAMLString() {
 				return "{\"header\" : " + _header.ToYAMLString() + ", \"pose\" : " + _pose.ToYAMLString() + "}";
 			}

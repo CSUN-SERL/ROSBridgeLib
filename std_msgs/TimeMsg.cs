@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using System.Text;
+﻿using System;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 
 /**
@@ -19,6 +19,13 @@ namespace ROSBridgeLib {
 		public class TimeMsg : ROSBridgeMsg {
 			private int _secs, _nsecs;
 
+			public override String ROSMessageType
+			{
+				get { return "std_msgs/Time"; }
+			}
+			
+			public TimeMsg() {}
+			
 			public TimeMsg(JSONNode msg) {
 				_secs = int.Parse(msg["secs"]);
 				_nsecs = int.Parse (msg["nsecs"]);
@@ -29,10 +36,6 @@ namespace ROSBridgeLib {
 				_nsecs = nsecs;
 			}
 
-			public static string GetMessageType() {
-				return "std_msgs/Time";
-			}
-
 			public int GetSecs() {
 				return _secs;
 			}
@@ -41,8 +44,14 @@ namespace ROSBridgeLib {
 				return _nsecs;
 			}
 
+			public override void Deserialize(JSONNode msg)
+			{
+				_secs = int.Parse(msg["secs"]);
+				_nsecs = int.Parse (msg["nsecs"]);
+			}
+
 			public override string ToString() {
-				return "Time [secs=" + _secs + ",  nsecs=" + _nsecs + "]";
+				return ROSMessageType + " [secs=" + _secs + ",  nsecs=" + _nsecs + "]";
 			}
 
 			public override string ToYAMLString() {

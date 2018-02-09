@@ -1,4 +1,6 @@
-﻿using SimpleJSON;
+﻿using System;
+using System.Runtime.CompilerServices;
+using SimpleJSON;
 using ROSBridgeLib.std_msgs;
 
 namespace ROSBridgeLib.sensor_msgs
@@ -39,7 +41,7 @@ namespace ROSBridgeLib.sensor_msgs
     /// <summary>
     /// Represent battery status from SYSTEM_STATUS
     /// </summary>
-    public class BatteryStateMsg : ROSBridgeMsg
+    public class BatteryStateMsg : Core.ROSBridgeMsg
     {
         public HeaderMsg Header { get; private set; }
         public float Voltage { get; private set; } // [V]
@@ -56,7 +58,24 @@ namespace ROSBridgeLib.sensor_msgs
         public string Location { get; private set; }
         public string SerialNumber { get; private set; }
 
+        public override string ROSMessageType
+        {
+            get { return "sensor_msgs/BatteryState"; }
+        }
+
+        public BatteryStateMsg(){ }
+        
         public BatteryStateMsg(JSONNode msg)
+        {
+            InternalDeserialize(msg);
+        }
+        
+        public override void Deserialize(JSONNode msg)
+        {
+            InternalDeserialize(msg);
+        }
+
+        private void InternalDeserialize(JSONNode msg)
         {
             Header = new HeaderMsg(msg["header"]);
 
@@ -102,16 +121,11 @@ namespace ROSBridgeLib.sensor_msgs
             SerialNumber = msg["serial_number"];
         }
         
-        public static string GetMessageType()
-        {
-            return "sensor_msgs/BatteryState";
-        }
-
         public override string ToString()
         {
-            return $"{GetMessageType()} [header={Header}, voltage={Voltage}, current={Current}, charge={Charge}, capacity={Capacity}, design_capacity={DesignCapacity}, percentage={Percentage}, power_supply_status={(int)PowerSupplyStatus}, power_supply_health={(int)PowerSupplyHealth}, power_supply_technology={(int)PowerSupplyTechnology}, present={Present}, cell_voltage={CellVoltageToString()}, location={Location}, serial_number={SerialNumber}]";                                                                                               
+            return $"{ROSMessageType} [header={Header}, voltage={Voltage}, current={Current}, charge={Charge}, capacity={Capacity}, design_capacity={DesignCapacity}, percentage={Percentage}, power_supply_status={(int)PowerSupplyStatus}, power_supply_health={(int)PowerSupplyHealth}, power_supply_technology={(int)PowerSupplyTechnology}, present={Present}, cell_voltage={CellVoltageToString()}, location={Location}, serial_number={SerialNumber}]";                                                                                               
         }
-
+        
         public override string ToYAMLString()
         {
             return $"{{\"header\" : {Header}, \"voltage\" : {Voltage}, \"current\" : {Current}, \"charge\" : {Charge}, \"capacity\" : {Capacity}, \"design_capacity\" : {DesignCapacity}, \"percentage\" : {Percentage}, \"power_supply_status\" : {(int)PowerSupplyStatus}, \"power_supply_health\" : {(int)PowerSupplyHealth}, \"power_supply_technology\" : {(int)PowerSupplyTechnology}, \"present\" : {Present}, \"cell_voltage\" : {CellVoltageToString()}, \"location\" : {Location}, \"serial_number\" : {SerialNumber}}}";                                                                                                                                                                                   

@@ -1,6 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 using ROSBridgeLib.std_msgs;
 using ROSBridgeLib.geometry_msgs;
@@ -18,6 +17,13 @@ namespace ROSBridgeLib {
 			public HeaderMsg _header;
 			public List<PoseStampedMsg> _poses;
 			
+			public override string ROSMessageType
+			{
+				get{ return "nav_msgs/Path"; }
+			}
+			
+			public PathMsg() {}
+			
 			public PathMsg(JSONNode msg) {
 				_header = new HeaderMsg(msg["header"]);
                 // Treat poses
@@ -26,22 +32,24 @@ namespace ROSBridgeLib {
 				}
 			}
 
-			public static string GetMessageType() {
-				return "nav_msgs/Path";
-			}
-
 			public HeaderMsg GetHeader() {
 				return _header;
 			}
 
-			public PoseStampedMsg GetPoseStamped(int idx = 0) {
-				if (idx < _poses.Count) {
-					return _poses [idx];
-				} else {
-					return null;
+			public PoseStampedMsg GetPoseStamped(int index)
+			{
+				return index < _poses?.Count ? _poses[index] : null;
+			}
+			
+			public override void Deserialize(JSONNode msg)
+			{
+				_header = new HeaderMsg(msg["header"]);
+				// Treat poses
+				for (int i = 0; i < msg["poses"].Count; i++ ) {
+					_poses.Add(new PoseStampedMsg(msg["poses"][i]));
 				}
 			}
-
+			
 			public override string ToString() {
 				string array = "[";
 				for (int i = 0; i < _poses.Count; i++) {
@@ -51,7 +59,7 @@ namespace ROSBridgeLib {
 				}
 				array += "]";
 
-				return "Path [header=" + _header.ToString() 
+				return ROSMessageType + " [header=" + _header.ToString() 
 					+ ",  poses=" + array + "]";
 			}
 

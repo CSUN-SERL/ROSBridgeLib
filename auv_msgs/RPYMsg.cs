@@ -1,7 +1,6 @@
-﻿using System.Collections;
-using System.Text;
+﻿using System;
+using ROSBridgeLib.Core;
 using SimpleJSON;
-using UnityEngine;
 
 /**
  * Define a auv_msgs NED message. This has been hand-crafted from the corresponding
@@ -15,21 +14,25 @@ namespace ROSBridgeLib {
 		public class RPYMsg : ROSBridgeMsg {
 			private float _roll, _pitch, _yaw;
 
+			private static float Rad2Deg = 180 / (float)Math.PI;
+			
+			public override string ROSMessageType
+			{
+				get { return "auv_msgs/RPY"; }
+			}
+			
+			public RPYMsg() {}
+			
 			public RPYMsg(JSONNode msg) {
-				//Debug.Log ("RPYMsg with " + msg.ToString());
 				_roll = float.Parse(msg["roll"]);
 				_pitch  = float.Parse(msg["pitch"]);
 				_yaw = float.Parse(msg["yaw"]);
 			}
 
-			public RPYMsg(float roll, float pitch, float yaw) {
-				_roll = roll;
-				_pitch = pitch;
-				_yaw = yaw;
-			}
-
-			public static string getMessageType() {
-				return "auv_msgs/NED";
+			public RPYMsg(float rollRadians, float pitchRadians, float yawRadians) {
+				_roll = rollRadians;
+				_pitch = pitchRadians;
+				_yaw = yawRadians;
 			}
 
 			public float GetRoll() {
@@ -45,19 +48,26 @@ namespace ROSBridgeLib {
 			}
 
 			public float GetRollDegrees()  {
-				return (float)(_roll / Mathf.PI * 180.0);
+				return _roll * Rad2Deg;
 			}
 
 			public float GetPitchDegrees()  {
-				return (float)(_pitch / Mathf.PI * 180.0);
+				return _pitch * Rad2Deg;
 			}
 
 			public float GetYawDegrees()  {
-						return (float)(_yaw / Mathf.PI * 180.0);
+				return _yaw * Rad2Deg;
 			}
 
+			public override void Deserialize(JSONNode msg)
+			{
+				_roll = float.Parse(msg["roll"]);
+				_pitch  = float.Parse(msg["pitch"]);
+				_yaw = float.Parse(msg["yaw"]);
+			}
+			
 			public override string ToString() {
-				return "auv_msgs/RPY [roll=" + _roll + ",  pitch=" + _pitch + ", yaw=" + _yaw + "]";
+				return ROSMessageType + " [roll=" + _roll + ",  pitch=" + _pitch + ", yaw=" + _yaw + "]";
 			}
 
 			public override string ToYAMLString() {

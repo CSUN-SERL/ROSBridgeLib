@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System;
-using System.Text;
+﻿using System;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 using ROSBridgeLib.std_msgs;
-using UnityEngine;
 
 /**
  * Define a point cloud message.
@@ -12,102 +10,85 @@ using UnityEngine;
  */
 
 namespace ROSBridgeLib {
-		namespace sensor_msgs {
-				public class PointCloudMsg : ROSBridgeMsg {
-						private static bool print = true;
-						private HeaderMsg _header;
-						private uint _width, _height;
-						private uint _point_step, _row_step;
-						private uint _num_points;
+	namespace sensor_msgs {
+		public class PointCloudMsg : ROSBridgeMsg {
+			private HeaderMsg _header;
+			private uint _width, _height;
+			private uint _point_step, _row_step;
+			private uint _num_points;
 
-						private byte[] _data;
+			private byte[] _data;
 
-						public PointCloudMsg (JSONNode msg) {
-								_header = new HeaderMsg (msg ["header"]);
+			public override string ROSMessageType
+			{
+				get{ return "sensor_msgs/PointCloud2"; }
+			}
+			
+			public PointCloudMsg() { }
+			
+			public PointCloudMsg (JSONNode msg) {
+				_header = new HeaderMsg (msg ["header"]);
 
-								_width = uint.Parse(msg["width"]);
-								_height = uint.Parse(msg["height"]);
-								_point_step = uint.Parse(msg["point_step"]);
-								_row_step = uint.Parse(msg["row_step"]);
-								_num_points = _width * _height;
+				_width = uint.Parse(msg["width"]);
+				_height = uint.Parse(msg["height"]);
+				_point_step = uint.Parse(msg["point_step"]);
+				_row_step = uint.Parse(msg["row_step"]);
+				_num_points = _width * _height;
 
-								_data = System.Convert.FromBase64String(msg ["data"]); // Converts the JSONNode to a byte array
+				_data = System.Convert.FromBase64String(msg ["data"]); // Converts the JSONNode to a byte array
+			}
+			
+			public byte[] GetData()	{
+				return _data;
+			}
 
-								if (print) {
-										string time = FromUnixTime(_header.GetTimeMsg().GetSecs()).ToString("hh:mm:ss");
+			public uint GetWidth() {
+				return _width;
+			}
 
-										int middleIndex = (int)(_point_step * _width * (int)_height / 2 + (int)_width / 2 * _point_step);
-										float middleZ = System.BitConverter.ToSingle (_data,  middleIndex + 8);
-										Debug.Log ("Time: " + time + " Middle z: " + middleZ);
-										/*
-										// Printing points for the first row
-										for (int i = 0; i < (int)_width; i++) {
-												float x = System.BitConverter.ToSingle (_data, i * 16 + 0);
-												float y = System.BitConverter.ToSingle (_data, i * 16 + 4);
-												float z = System.BitConverter.ToSingle (_data, i * 16 + 8);
+			public uint GetHeight() {
+				return _height;
+			}
 
-												double xd = System.Math.Round (System.Convert.ToDouble (x), 2);
-												double yd = System.Math.Round (System.Convert.ToDouble (y), 2);
-												double zd = System.Math.Round (System.Convert.ToDouble (z), 4);
-											
+			public uint GetPointStep() {
+				return _point_step;
+			}
 
-												// Print point if not NaN
-												if (x == x | y == y | z == z) {
-														Debug.Log ("Point " + i + ", xyz= " + xd + ", " + yd + ", " + zd);
-												}
-										}
-										*/
-										/*
-									Debug.Log ("data[0]: " + _data [0]);
-									Debug.Log ("data[1]: " + _data [1]);
-									Debug.Log ("data[2]: " + _data [2]);
-									Debug.Log ("data[3]: " + _data [3]);
-									Debug.Log ("data[4]: " + _data [4]);
-									Debug.Log ("data[5]: " + _data [5]);
-									Debug.Log ("data[6]: " + _data [6]);
-									Debug.Log ("data[7]: " + _data [7]);
-									*/
-										//print = false;
-								}
-						}
+			public uint GetRowStep() {
+				return _row_step;
+			}
 
-						public static string GetMessageType() {
-								return "sensor:msgs/PointCloud2";
-						}
+			public uint GetNumPoints() {
+				return _num_points;
+			}
 
-						public byte[] GetData()	{
-								return _data;
-						}
+			public override void Deserialize(JSONNode msg)
+			{
+				_header = new HeaderMsg (msg ["header"]);
 
-						public uint GetWidth() {
-								return _width;
-						}
+				_width = uint.Parse(msg["width"]);
+				_height = uint.Parse(msg["height"]);
+				_point_step = uint.Parse(msg["point_step"]);
+				_row_step = uint.Parse(msg["row_step"]);
+				_num_points = _width * _height;
 
-						public uint GetHeight() {
-								return _height;
-						}
+				_data = System.Convert.FromBase64String(msg ["data"]); // Converts the JSONNode to a byte array
+			}
 
-						public uint GetPointStep() {
-								return _point_step;
-						}
+			public override string ToString() {
+				return ROSMessageType + " [width=" + _width + ", height=" + _height + ", point_step=" + _point_step + ", row_step=" + _row_step + ", num_points=" + _num_points + "]";
+			}
 
-						public uint GetRowStep() {
-								return _row_step;
-						}
-
-						public uint GetNumPoints() {
-								return _num_points;
-						}
-
-						public override string ToString() {
-								return "Point cloud. dim=" + _width + "x" + _height;
-						}
-
-						public DateTime FromUnixTime(long unixTime)
-						{
-								DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-								return epoch.AddSeconds(unixTime);
-						}
-				}
+			public override string ToYAMLString()
+			{
+				throw new NotImplementedException();
+			}
+			
+			public DateTime FromUnixTime(long unixTime)
+			{
+				DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+				return epoch.AddSeconds(unixTime);
+			}
 		}
+	}
 }

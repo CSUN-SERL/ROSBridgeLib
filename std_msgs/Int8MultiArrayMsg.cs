@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Text;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 
 /* 
@@ -13,6 +12,13 @@ namespace ROSBridgeLib {
             private MultiArrayLayoutMsg _layout;
             private sbyte[] _data;
 
+            public override string ROSMessageType
+            {
+                get { return "std_msgs/Int8MultiArray"; }
+            }
+            
+            public Int8MultiArrayMsg() {}
+            
             public Int8MultiArrayMsg(JSONNode msg) {
                 _layout = new MultiArrayLayoutMsg(msg["layout"]);
                 _data = new sbyte[msg["data"].Count];
@@ -26,10 +32,6 @@ namespace ROSBridgeLib {
                 _data = data;
             }
 
-            public static string GetMessageType() {
-                return "std_msgs/Int8MultiArray";
-            }
-
             public sbyte[] GetData() {
                 return _data;
             }
@@ -38,6 +40,15 @@ namespace ROSBridgeLib {
                 return _layout;
             }
 
+            public override void Deserialize(JSONNode msg)
+            {
+                _layout = new MultiArrayLayoutMsg(msg["layout"]);
+                _data = new sbyte[msg["data"].Count];
+                for (int i = 0; i < _data.Length; i++) {
+                    _data[i] = sbyte.Parse(msg["data"][i]);
+                }
+            }
+            
             public override string ToString() {
                 string array = "[";
                 for (int i = 0; i < _data.Length; i++) {
@@ -46,7 +57,7 @@ namespace ROSBridgeLib {
                         array += ",";
                 }
                 array += "]";
-                return "Int8MultiArray [layout=" + _layout.ToString() + ", data=" + _data + "]";
+                return ROSMessageType + " [layout=" + _layout.ToString() + ", data=" + _data + "]";
             }
 
             public override string ToYAMLString() {

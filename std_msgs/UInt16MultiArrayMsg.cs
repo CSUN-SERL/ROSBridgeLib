@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Text;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 
 /* 
@@ -13,6 +12,13 @@ namespace ROSBridgeLib {
             private MultiArrayLayoutMsg _layout;
             private ushort[] _data;
 
+            public override string ROSMessageType
+            {
+                get { return "std_msgs/UInt16MultiArray"; }
+            }
+            
+            public UInt16MultiArrayMsg() {}
+            
             public UInt16MultiArrayMsg(JSONNode msg) {
                 _layout = new MultiArrayLayoutMsg(msg["layout"]);
                 _data = new ushort[msg["data"].Count];
@@ -26,10 +32,6 @@ namespace ROSBridgeLib {
                 _data = data;
             }
 
-            public static string GetMessageType() {
-                return "std_msgs/UInt16MultiArray";
-            }
-
             public ushort[] GetData() {
                 return _data;
             }
@@ -38,15 +40,27 @@ namespace ROSBridgeLib {
                 return _layout;
             }
 
-            public override string ToString() {
-                string array = "[";
+            public override void Deserialize(JSONNode msg)
+            {
+                _layout = new MultiArrayLayoutMsg(msg["layout"]);
+                _data = new ushort[msg["data"].Count];
                 for (int i = 0; i < _data.Length; i++) {
+                    _data[i] = ushort.Parse(msg["data"][i]);
+                }
+            }
+            
+            public override string ToString()
+            {
+                string array = "[";
+                for (int i = 0; i < _data.Length; i++)
+                {
                     array = array + _data[i];
                     if (_data.Length - i <= 1)
                         array += ",";
                 }
+
                 array += "]";
-                return "UInt16MultiArray [layout=" + _layout.ToString() + ", data=" + _data + "]";
+                return ROSMessageType + " [layout=" + _layout.ToString() + ", data=" + _data + "]";
             }
 
             public override string ToYAMLString() {

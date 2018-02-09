@@ -1,10 +1,9 @@
-using System.Collections;
-using System.Text;
+using System;
 using SimpleJSON;
+using ROSBridgeLib.Core;
 using ROSBridgeLib.std_msgs;
 using ROSBridgeLib.geometry_msgs;
-using ROSBridgeLib.geographic_msgs;
-using UnityEngine;
+using UnityEngine.AI;
 
 /**
  * Define a auv_msgs NavSts  message. This has been hand-crafted from the corresponding
@@ -28,10 +27,15 @@ namespace ROSBridgeLib {
 			public RPYMsg _orientation_variance;
 			public UInt8Msg _status;
 
+			public override string ROSMessageType
+			{
+				get { return "auv_msgs/NavSts "; }
+			}
+			
+			public NavStsMsg() {}
+			
 			public NavStsMsg(JSONNode msg) {
-				//Debug.Log("NavStsMsg with " + msg.ToString());
-
-                _header = new HeaderMsg(msg["header"]);
+				_header = new HeaderMsg(msg["header"]);
 				_global_position = new DecimalLatLonMsg(msg["global_position"]);
 				_origin = new DecimalLatLonMsg(msg["origin"]);
 				_position = new NEDMsg(msg["position"]);
@@ -42,8 +46,6 @@ namespace ROSBridgeLib {
 				_position_variance = new NEDMsg(msg["position_variance"]);
 				_orientation_variance = new RPYMsg(msg["orientation_variance"]);
 				_status = new UInt8Msg(msg["status"]);
-
-				//Debug.Log("NavStsMsg done and it looks like " + this.ToString());
             }
 
 			public NavStsMsg(HeaderMsg header, 
@@ -69,10 +71,6 @@ namespace ROSBridgeLib {
 				_orientation_variance = orientation_variance;
 				_status = status;
             }
-			
-			public static string getMessageType() {
-				return "auv_msgs/NavSts ";
-			}
 
             public HeaderMsg GetHeader() {
                 return _header;
@@ -126,20 +124,35 @@ namespace ROSBridgeLib {
                 return _status;
             }
 
-            public override string ToString() {
-				return "auv_msgs/NavSts  [header=" + _header.ToString() +
-						", global_position=" + _global_position.ToString() +
-						", origin=" + _origin.ToString() +
-						", position=" + _position.ToString() +
-						", altitude=" + _altitude.ToString() +
-						", body_velocity=" + _body_velocity.ToString() +
-						", orientation=" + _orientation.ToString() +
-						", orientation_rate=" + _orientation_rate.ToString() +
-						", position_variance=" + _position_variance.ToString() +
-						", orientation_variance=" + _orientation_variance.ToString() +
-						", status=" + _status.ToString() + "]";
+			public override void Deserialize(JSONNode msg)
+			{
+				_header = new HeaderMsg(msg["header"]);
+				_global_position = new DecimalLatLonMsg(msg["global_position"]);
+				_origin = new DecimalLatLonMsg(msg["origin"]);
+				_position = new NEDMsg(msg["position"]);
+				_altitude = new Float32Msg(msg["altitude"]);
+				_body_velocity = new PointMsg(msg["body_velocity"]);
+				_orientation = new RPYMsg(msg["orientation"]);
+				_orientation_rate = new RPYMsg(msg["orientation_rate"]);
+				_position_variance = new NEDMsg(msg["position_variance"]);
+				_orientation_variance = new RPYMsg(msg["orientation_variance"]);
+				_status = new UInt8Msg(msg["status"]);
 			}
 			
+			public override string ToString() {
+				return ROSMessageType + " [header=" + _header.ToString() +
+				       ", global_position=" + _global_position.ToString() +
+				       ", origin=" + _origin.ToString() +
+				       ", position=" + _position.ToString() +
+				       ", altitude=" + _altitude.ToString() +
+				       ", body_velocity=" + _body_velocity.ToString() +
+				       ", orientation=" + _orientation.ToString() +
+				       ", orientation_rate=" + _orientation_rate.ToString() +
+				       ", position_variance=" + _position_variance.ToString() +
+				       ", orientation_variance=" + _orientation_variance.ToString() +
+				       ", status=" + _status.ToString() + "]";
+			}
+
 			public override string ToYAMLString() {
 				return "{\"header\":" + _header.ToYAMLString() +
 						", \"global_position\":" + _global_position.ToYAMLString() +

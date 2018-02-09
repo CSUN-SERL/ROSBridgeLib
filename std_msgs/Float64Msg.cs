@@ -1,7 +1,5 @@
-using System.Collections;
-using System.Text;
 using SimpleJSON;
-using UnityEngine;
+using ROSBridgeLib.Core;
 
 /* 
  * @brief ROSBridgeLib
@@ -11,31 +9,39 @@ using UnityEngine;
 namespace ROSBridgeLib {
 	namespace std_msgs {
 		public class Float64Msg : ROSBridgeMsg {
-			private double _data;
+ 			private double _data;
+ 
+ 			public override string ROSMessageType
+ 			{
+ 				get { return "std_msgs/Float64"; }
+ 			}
+ 			
+			public Float64Msg() { }
 			
-			public Float64Msg(JSONNode msg) {
-				_data = double.Parse(msg);
-			}
-			
-			public Float64Msg(double data) {
-				_data = data;
-			}
-			
-			public static string GetMessageType() {
-				return "std_msgs/Float64";
-			}
-			
-			public double GetData() {
-				return _data;
-			}
-			
-			public override string ToString() {
-				return "Float64 [data=" + _data.ToString() + "]";
-			}
-			
-			public override string ToYAMLString() {
-				return "{\"data\" : " + _data.ToString() + "}";
-			}
-		}
-	}
-}
+ 			public Float64Msg(JSONNode msg) {
+ 				_data = double.Parse(msg);
+ 			}
+ 			
+ 			public Float64Msg(double data) {
+ 				_data = data;
+ 			}
+ 			
+ 			public double GetData() {
+ 				return _data;
+ 			}
+ 			
+ 			public override string ToString() {
+ 				return ROSMessageType + " [data=" + _data.ToString() + "]";
+ 			}
+ 
+ 			public override void Deserialize(JSONNode msg)
+ 			{
+ 				_data = double.Parse(msg);
+ 			}
+ 
+ 			public override string ToYAMLString() {
+ 				return "{\"data\" : " + _data.ToString() + "}";
+ 			}
+ 		}
+ 	}
+ }

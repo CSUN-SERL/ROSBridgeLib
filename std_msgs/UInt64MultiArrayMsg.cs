@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Text;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 
 /* 
@@ -12,6 +11,13 @@ namespace ROSBridgeLib {
 		public class UInt64MultiArrayMsg : ROSBridgeMsg {
 			private MultiArrayLayoutMsg _layout;
             private ulong[] _data;
+
+			public override string ROSMessageType
+			{
+				get{ return "std_msgs/UInt64MultiArray"; }
+			}
+			
+			public UInt64MultiArrayMsg() { }
 			
 			public UInt64MultiArrayMsg(JSONNode msg) {
                 _layout = new MultiArrayLayoutMsg(msg["layout"]);
@@ -25,10 +31,6 @@ namespace ROSBridgeLib {
                 _layout = layout;
 				_data = data;
 			}
-			
-			public static string GetMessageType() {
-				return "std_msgs/UInt64MultiArray";
-			}
 
 			public ulong[] GetData() {
 				return _data;
@@ -38,6 +40,15 @@ namespace ROSBridgeLib {
                 return _layout;
             }
 
+			public override void Deserialize(JSONNode msg)
+			{
+				_layout = new MultiArrayLayoutMsg(msg["layout"]);
+				_data = new ulong[msg["data"].Count];
+				for (int i = 0; i < _data.Length; i++) {
+					_data[i] = ulong.Parse(msg["data"][i]);
+				}
+			}
+			
 			public override string ToString() {
                 string array = "[";
                 for (int i = 0; i < _data.Length; i++) {
@@ -46,7 +57,7 @@ namespace ROSBridgeLib {
                         array += ",";
                 }
                 array += "]";
-				return "UInt64MultiArray [layout=" + _layout.ToString() + ", data=" + _data + "]";
+				return ROSMessageType + " [layout=" + _layout.ToString() + ", data=" + _data + "]";
 			}
 
 			public override string ToYAMLString() {

@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Text;
+﻿using ROSBridgeLib.Core;
 using SimpleJSON;
-using ROSBridgeLib.std_msgs;
-using UnityEngine;
 
 /**
  * Define a PointField message.
@@ -36,6 +33,13 @@ namespace ROSBridgeLib {
 			public const byte FLOAT32 = 7;
 			public const byte FLOAT64 = 8;
 
+			public override string ROSMessageType 
+			{
+				get { return "sensor_msgs/PointField"; }
+			}
+			
+			public PointFieldMsg() {}
+			
 			public PointFieldMsg(JSONNode msg) {
 				_name = msg ["name"];
 				_offset = uint.Parse(msg ["offset"]);
@@ -66,12 +70,16 @@ namespace ROSBridgeLib {
 				return _count;
 			}
 
-			public static string GetMessageType() {
-				return "sensor_msgs/PointField";
+			public override void Deserialize(JSONNode msg)
+			{
+				_name = msg ["name"];
+				_offset = uint.Parse(msg ["offset"]);
+				_datatype = byte.Parse(msg ["datatype"]);
+				_count = uint.Parse(msg ["count"]);
 			}
-
+			
 			public override string ToString() {
-				return "PointField [name=" + _name + ",  offset=" + _offset + ", datatype=" + _datatype + ", count=" + _count + "]";
+				return ROSMessageType + " [name=" + _name + ",  offset=" + _offset + ", datatype=" + _datatype + ", count=" + _count + "]";
 			}
 
 			public override string ToYAMLString() {

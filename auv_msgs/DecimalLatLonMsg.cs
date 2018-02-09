@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Text;
-using SimpleJSON;
-using UnityEngine;
-
+﻿using SimpleJSON;
+using ROSBridgeLib.Core;
 /**
  * Define a geographic_msgs GeoPoint message. This has been hand-crafted from the corresponding
  * geographic_msgs message file.
@@ -15,15 +12,22 @@ namespace ROSBridgeLib {
 		public class DecimalLatLonMsg : ROSBridgeMsg {
 			private double _latitude, _longitude;
 
-			public DecimalLatLonMsg(JSONNode msg) {
-				//Debug.Log ("DecimalLatLonMsg with " + msg.ToString());
-				_latitude = double.Parse(msg["latitude"]);
-				_longitude  = double.Parse(msg["longitude"]);
+			public override string ROSMessageType
+			{
+				get { return "auv_msgs/DecimalLatLon"; }
 			}
+			
+			public DecimalLatLonMsg() {}
 
 			public DecimalLatLonMsg(double latitude, double longitude) {
 				_latitude = latitude;
 				_longitude = longitude;
+			}
+
+			public DecimalLatLonMsg(JSONNode node)
+			{
+				_latitude = double.Parse(node["latitude"]);
+				_longitude  = double.Parse(node["longitude"]);
 			}
 
 			public static string getMessageType() {
@@ -38,10 +42,16 @@ namespace ROSBridgeLib {
 				return _longitude;
 			}
 
-			public override string ToString() {
-				return "auv_msgs/DecimalLatLon [latitude=" + _latitude + ",  longitude=" + _longitude + "]";
+			public override void Deserialize(JSONNode msg)
+			{
+				_latitude = double.Parse(msg["latitude"]);
+				_longitude  = double.Parse(msg["longitude"]);
 			}
-
+			
+			public override string ToString() {
+				return ROSMessageType + " [latitude=" + _latitude + ",  longitude=" + _longitude + "]";
+			}
+			
 			public override string ToYAMLString() {
 				return "{\"latitude\": " + _latitude + ", \"longitude\": " + _longitude + "}";
 			}

@@ -2,6 +2,9 @@
 using System.Text;
 using SimpleJSON;
 
+namespace ROSBridgeLib.Core
+{
+
 /**
  * This (mostly empty) class is the parent class for all RosBridgeMsg's (the actual message) from
  * ROS. As the message can be empty....
@@ -19,18 +22,19 @@ using SimpleJSON;
  * @version 3.1
  */
 
-public class ROSBridgeMsg  {
+public abstract class ROSBridgeMsg : IMsg  {
 
 	public ROSBridgeMsg() {}
+	
+	public abstract string ROSMessageType { get; }
+	public abstract void Deserialize(JSONNode msg);
+	public abstract string ToYAMLString();
 
-
-	public virtual string ToYAMLString() {
-		StringBuilder x = new StringBuilder();
-		x.Append("{");
-		x.Append("}");
-		return x.ToString();
+	public static ROSCallback<IMsg> ConvertCallback<T>(ROSCallback<T> callback) where T : IMsg
+	{
+		return callback == null ? null : new ROSCallback<IMsg>(o => callback((T)o));
 	}
-
+	
 	public static string Advertise(string messageTopic, string messageType) {
 		return "{\"op\": \"advertise\", \"topic\": \"" + messageTopic + "\", \"type\": \"" + messageType + "\"}";
 	}
@@ -43,9 +47,9 @@ public class ROSBridgeMsg  {
 		return "{\"op\": \"publish\", \"topic\": \"" + messageTopic + "\", \"msg\": " + message + "}";
 	}
 	
-	public static string Subscribe(string messageTopic) {
-		return "{\"op\": \"subscribe\", \"topic\": \"" + messageTopic +  "\"}";
-	}
+//	public static string Subscribe(string messageTopic) {
+//		return "{\"op\": \"subscribe\", \"topic\": \"" + messageTopic +  "\"}";
+//	}
 	
 	public static string Subscribe(string messageTopic, string messageType) {
 		return "{\"op\": \"subscribe\", \"topic\": \"" + messageTopic +  "\", \"type\": \"" + messageType + "\"}";
@@ -65,5 +69,6 @@ public class ROSBridgeMsg  {
 	public static string CallService(string service) {
 		return "{\"op\": \"call_service\", \"service\": \"" + service +  "\"}";
 	}
-	
+}
+
 }
