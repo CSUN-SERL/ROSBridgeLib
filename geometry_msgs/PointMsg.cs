@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Text;
+﻿using ROSBridgeLib.Core;
 using SimpleJSON;
-using UnityEngine;
 
 /**
  * Define a geometry_msgs point message. This has been hand-crafted from the corresponding
@@ -15,8 +13,14 @@ namespace ROSBridgeLib {
 		public class PointMsg : ROSBridgeMsg {
 			private float _x, _y, _z;
 
+			public override string ROSMessageType
+			{
+				get { return "geometry_msgs/Point"; }
+			}
+
+			public PointMsg() { }
+			
 			public PointMsg(JSONNode msg) {
-				//Debug.Log ("PointMsg with " + msg.ToString());
 				_x = float.Parse(msg["x"]);
 				_y = float.Parse(msg["y"]);
 				_z = float.Parse(msg["z"]);
@@ -26,10 +30,6 @@ namespace ROSBridgeLib {
 				_x = x;
 				_y = y;
 				_z = z;
-			}
-			
-			public static string getMessageType() {
-				return "geometry_msgs/Point";
 			}
 			
 			public float GetX() {
@@ -44,10 +44,17 @@ namespace ROSBridgeLib {
 				return _z;
 			}
 			
-			public override string ToString() {
-				return "geometry_msgs/Point [x=" + _x + ",  y=" + _y + ", z=" + _z + "]";
+			public override void Deserialize(JSONNode msg)
+			{
+				_x = float.Parse(msg["x"]);
+				_y = float.Parse(msg["y"]);
+				_z = float.Parse(msg["z"]);
 			}
-					
+			
+			public override string ToString() {
+				return ROSMessageType + " [x=" + _x + ",  y=" + _y + ", z=" + _z + "]";
+			}
+
 			public override string ToYAMLString() {
 				return "{\"x\": " + _x + ", \"y\": " + _y + ", \"z\": " + _z + "}";
 			}

@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Text;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 
 /* 
@@ -18,6 +17,13 @@ namespace ROSBridgeLib {
 														   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
 														   0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
+			public override string ROSMessageType
+			{
+				get { return "geometry_msgs/PoseWithCovariance";  }
+			}
+			
+			public PoseWithCovarianceMsg() { }
+			
 			public PoseWithCovarianceMsg(JSONNode msg) {
 				_pose = new PoseMsg(msg["pose"]);
 				// Treat covariance
@@ -30,10 +36,6 @@ namespace ROSBridgeLib {
 				_pose = pose;
 				_covariance = covariance;
 			}
- 			
-			public static string GetMessageType() {
-				return "geometry_msgs/PoseWithCovariance";
-			}
 			
 			public PoseMsg GetPose() {
 				return _pose;
@@ -43,14 +45,23 @@ namespace ROSBridgeLib {
 				return _covariance;
 			}
 			
+			public override void Deserialize(JSONNode msg)
+			{
+				_pose = new PoseMsg(msg["pose"]);
+				// Treat covariance
+				for (int i = 0; i < msg["covariance"].Count; i++ ) {
+					_covariance[i] = double.Parse(msg["covariance"][i]);
+				}
+			}
+
 			public override string ToString() {
 				string array = "[";
-                for (int i = 0; i < _covariance.Length; i++) {
-                    array = array + _covariance[i].ToString();
-                    if (_covariance.Length - i <= 1) array += ",";
-                }
-                array += "]";
-				return "PoseWithCovariance [pose=" + _pose.ToString() + ",  covariance=" + array + "]";
+				for (int i = 0; i < _covariance.Length; i++) {
+					array = array + _covariance[i].ToString();
+					if (_covariance.Length - i <= 1) array += ",";
+				}
+				array += "]";
+				return ROSMessageType + " [pose=" + _pose.ToString() + ",  covariance=" + array + "]";
 			}
 			
 			public override string ToYAMLString() {

@@ -1,6 +1,6 @@
-﻿using SimpleJSON;
+﻿using ROSBridgeLib.Core;
+using SimpleJSON;
 using ROSBridgeLib.std_msgs;
-using UnityEngine;
 
 /**
  * Define a Image message.
@@ -19,6 +19,13 @@ namespace ROSBridgeLib {
             private uint _row_step;
             private byte[] _data;
 
+            public override string ROSMessageType
+            {
+                get { return "sensor_msgs/Image"; }
+            }
+            
+            public ImageMsg(){ }
+            
             public ImageMsg(JSONNode msg) {
                 _header = new HeaderMsg (msg ["header"]);
                 _height = uint.Parse(msg ["height"]);
@@ -59,17 +66,24 @@ namespace ROSBridgeLib {
                 return _data;
             }
 
-            public static string GetMessageType() {
-                return "sensor_msgs/Image";
+            public override void Deserialize(JSONNode msg)
+            {
+                _header = new HeaderMsg (msg ["header"]);
+                _height = uint.Parse(msg ["height"]);
+                _width = uint.Parse(msg ["width"]);
+                _encoding = msg ["encoding"];
+                _is_bigendian = msg["is_bigendian"].AsBool;
+                _row_step = uint.Parse(msg ["step"]);
+                _data = System.Convert.FromBase64String(msg["data"]);
             }
-
+            
             public override string ToString() {
-                return "Image [header=" + _header.ToString() +
-                    "height=" + _height +
-                    "width=" + _width +
-                    "encoding=" + _encoding +
-                    "is_bigendian=" + _is_bigendian +
-                    "row_step=" + _row_step + "]";
+                return ROSMessageType + " [header=" + _header.ToString() +
+                       "height=" + _height +
+                       "width=" + _width +
+                       "encoding=" + _encoding +
+                       "is_bigendian=" + _is_bigendian +
+                       "row_step=" + _row_step + "]";
             }
 
             public override string ToYAMLString() {

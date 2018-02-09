@@ -1,4 +1,5 @@
 ﻿using SimpleJSON;
+using ROSBridgeLib.Core;
 using ROSBridgeLib.std_msgs;
 
 /**
@@ -37,6 +38,16 @@ namespace ROSBridgeLib
 			public const uint ULTRASOUND = 0;
 			public const uint INFRARED = 1;
 
+			public override string ROSMessageType
+			{
+				get
+				{
+					return "sensor_msgs/Range";
+				}
+			}
+			
+			public RangeMsg() {}
+			
 			public RangeMsg (JSONNode msg)
 			{
 				_header = new HeaderMsg (msg ["header"]);
@@ -87,12 +98,22 @@ namespace ROSBridgeLib
 				return _radiation_type;
 			}
 
-			public override string ToString ()
+			public override void Deserialize(JSONNode msg)
 			{
-				return "Range [radiation_type=" + _radiation_type + ",  field_of_view=" + _field_of_view + ", min_range=" + _min_range + ", max_range=" + _max_range + ", range=" + _range + ", Header " + _header.ToString () + "]";
+				_header = new HeaderMsg (msg ["header"]);
+				_range = float.Parse (msg ["range"]);
+				_min_range = float.Parse (msg ["min_range"]);
+				_max_range = float.Parse (msg ["max_range"]);
+				_radiation_type = uint.Parse (msg ["radiation_type"]);
+				_field_of_view = float.Parse (msg ["field_of_view"]);
 			}
 
-			public override string ToYAMLString ()
+			public override string ToString()
+			{
+				return ROSMessageType + " [radiation_type=" + _radiation_type + ",  field_of_view=" + _field_of_view + ", min_range=" + _min_range + ", max_range=" + _max_range + ", range=" + _range + ", Header " + _header.ToString () + "]";
+			}
+			
+			public override string ToYAMLString()
 			{
 				return "{\"radiation_type\" : " + _radiation_type + ", \"field_of_view\" : " + _field_of_view + ", \"min_range\" : " + _min_range + ", \"max_range\" : " + _max_range + ", \"range\" : " + _range + ", \"header\" : " + _header.ToYAMLString () + "}";
 			}

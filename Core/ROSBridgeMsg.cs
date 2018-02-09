@@ -27,7 +27,7 @@ public abstract class ROSBridgeMsg : IMsg  {
 	public ROSBridgeMsg() {}
 	
 	public abstract string ROSMessageType { get; }
-	public abstract void Deserialize(JSONNode node);
+	public abstract void Deserialize(JSONNode msg);
 	public abstract string ToYAMLString();
 
 	public static ROSCallback<IMsg> ConvertCallback<T>(ROSCallback<T> callback) where T : IMsg

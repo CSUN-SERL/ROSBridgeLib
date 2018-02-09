@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Text;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 
 /* 
@@ -18,6 +17,13 @@ namespace ROSBridgeLib {
 														   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
 														   0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 			
+			public override string ROSMessageType
+			{
+				get { return "geometry_msgs/TwistWithCovariance"; }
+			}
+			
+			public TwistWithCovarianceMsg() { }
+			
 			public TwistWithCovarianceMsg(JSONNode msg) {
 				_twist = new TwistMsg(msg["twist"]);
 				// Treat covariance
@@ -29,10 +35,6 @@ namespace ROSBridgeLib {
 			public TwistWithCovarianceMsg(TwistMsg twist, double[] covariance) {
 				_twist = twist;
 				_covariance = covariance;
-			}
-			
-			public static string GetMessageType() {
-				return "geometry_msgs/TwistWithCovariance";
 			}
 			
 			public TwistMsg GetTwist() {
@@ -50,9 +52,18 @@ namespace ROSBridgeLib {
                     if (_covariance.Length - i <= 1) array += ",";
                 }
                 array += "]";
-				return "TwistWithCovariance [twist=" + _twist.ToString() + ",  covariance=" + array + "]";
+				return ROSMessageType + " [twist=" + _twist.ToString() + ",  covariance=" + array + "]";
 			}
-			
+
+			public override void Deserialize(JSONNode msg)
+			{
+				_twist = new TwistMsg(msg["twist"]);
+				// Treat covariance
+				for (int i = 0; i < msg["covariance"].Count; i++ ) {
+					_covariance[i] = double.Parse(msg["covariance"][i]);
+				}
+			}
+
 			public override string ToYAMLString() {
 				string array = "[";
                 for (int i = 0; i < _covariance.Length; i++) {

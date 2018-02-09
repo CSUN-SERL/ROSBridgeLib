@@ -1,9 +1,6 @@
-﻿using System.Collections;
-using System.IO;
-using System.Text;
+﻿using ROSBridgeLib.Core;
 using SimpleJSON;
 using ROSBridgeLib.std_msgs;
-using UnityEngine;
 
 /**
  * Define a compressed image message. Note: the image is assumed to be in Base64 format.
@@ -20,6 +17,12 @@ namespace ROSBridgeLib {
 			private byte[] _data;
 			private HeaderMsg _header;
 			
+			public override string ROSMessageType
+			{
+				get { return "sensor_msgs/CompressedImage"; }
+			}
+			
+			public CompressedImageMsg() { }
 			
 			public CompressedImageMsg(JSONNode msg) {
 				_format = msg ["format"];
@@ -36,13 +39,16 @@ namespace ROSBridgeLib {
 			public byte[] GetImage() {
 				return _data;
 			}
-			
-			public static string GetMessageType() {
-				return "sensor_msgs/CompressedImage";
+
+			public override void Deserialize(JSONNode msg)
+			{
+				_format = msg ["format"];
+				_header = new HeaderMsg (msg ["header"]);
+				_data = System.Convert.FromBase64String(msg ["data"]);
 			}
-			
+
 			public override string ToString() {
-				return "Compressed Image [format=" + _format + ",  size=" + _data.Length + ", Header " + _header.ToString () + "]";
+				return ROSMessageType + " [format=" + _format + ",  size=" + _data.Length + ", Header " + _header.ToString () + "]";
 			}
 			
 			public override string ToYAMLString() {

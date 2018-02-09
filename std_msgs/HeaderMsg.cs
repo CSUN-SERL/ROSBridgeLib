@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Text;
+﻿using ROSBridgeLib.Core;
 using SimpleJSON;
-using UnityEngine;
-
 /**
  * Define a header message. These have been hand-crafted from the corresponding msg file.
  * 
@@ -19,23 +16,23 @@ namespace ROSBridgeLib {
 			private TimeMsg _stamp;
 			private string _frame_id;
 			
+			public override string ROSMessageType
+			{
+				get { return "std_msgs/Header"; }
+			}
+
+			public HeaderMsg() { }
+			
 			public HeaderMsg(JSONNode msg) {
-				//Debug.Log ("HeaderMsg with " + msg.ToString ());
 				_seq = int.Parse (msg["seq"]);
 				_stamp = new TimeMsg (msg ["stamp"]);
 				_frame_id = msg["frame_id"];
-				//Debug.Log ("HeaderMsg done ");
-				//Debug.Log (" and it looks like " + this.ToString ());
 			}
 			
 			public HeaderMsg(int seq, TimeMsg stamp, string frame_id) {
 				_seq = seq;
 				_stamp = stamp;
 				_frame_id = frame_id;
-			}
-			
-			public static string GetMessageType() {
-				return "std_msgs/Header";
 			}
 			
 			public int GetSeq() {
@@ -49,9 +46,17 @@ namespace ROSBridgeLib {
 			public string GetFrameId() {
 				return _frame_id;
 			}
-			
-			public override string ToString() {
-				return "Header [seq=" + _seq + ",  stamp=" + _stamp + ", frame_id=" + _frame_id + "]";
+
+			public override void Deserialize(JSONNode msg)
+			{
+				_seq = int.Parse (msg["seq"]);
+				_stamp = new TimeMsg (msg ["stamp"]);
+				_frame_id = msg["frame_id"];
+			}
+
+			public override string ToString()
+			{
+				return ROSMessageType + " [seq=" + _seq + ", stamp=" + _stamp + ", frame_id=" + _frame_id + "]";
 			}
 			
 			public override string ToYAMLString() {

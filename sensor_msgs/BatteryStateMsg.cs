@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using SimpleJSON;
 using ROSBridgeLib.std_msgs;
 
@@ -57,47 +58,57 @@ namespace ROSBridgeLib.sensor_msgs
         public string Location { get; private set; }
         public string SerialNumber { get; private set; }
 
-        public BatteryStateMsg(){ }
-               
         public override string ROSMessageType
         {
             get { return "sensor_msgs/BatteryState"; }
         }
 
-        public override void Deserialize(JSONNode node)
+        public BatteryStateMsg(){ }
+        
+        public BatteryStateMsg(JSONNode msg)
         {
-            Header = new HeaderMsg(node["header"]);
+            InternalDeserialize(msg);
+        }
+        
+        public override void Deserialize(JSONNode msg)
+        {
+            InternalDeserialize(msg);
+        }
+
+        private void InternalDeserialize(JSONNode msg)
+        {
+            Header = new HeaderMsg(msg["header"]);
 
             float f;
-            Voltage = float.TryParse(node["voltage"], out f) ? f : 0;
-            Current = float.TryParse(node["current"], out f) ? f : 0;
-            Charge = float.TryParse(node["charge"], out f) ? f : 0;
-            Capacity = float.TryParse(node["capacity"], out f) ? f : 0;
-            DesignCapacity = float.TryParse(node["design_capacity"], out f) ? f : 0;
-            Percentage = float.TryParse(node["percentage"], out f) ? f : 0;
+            Voltage = float.TryParse(msg["voltage"], out f) ? f : 0;
+            Current = float.TryParse(msg["current"], out f) ? f : 0;
+            Charge = float.TryParse(msg["charge"], out f) ? f : 0;
+            Capacity = float.TryParse(msg["capacity"], out f) ? f : 0;
+            DesignCapacity = float.TryParse(msg["design_capacity"], out f) ? f : 0;
+            Percentage = float.TryParse(msg["percentage"], out f) ? f : 0;
             
             int pss;
-            if(int.TryParse(node["power_supply_status"], out pss))
+            if(int.TryParse(msg["power_supply_status"], out pss))
             {
                 PowerSupplyStatus = (PowerSupplyStatus) pss;
             }
 
             int psh;
-            if (int.TryParse(node["power_supply_health"], out psh))
+            if (int.TryParse(msg["power_supply_health"], out psh))
             {
                 PowerSupplyHealth = (PowerSupplyHealth) psh;
             }
 
             int pst;
-            if (int.TryParse(node["power_supply_technology"], out pst))
+            if (int.TryParse(msg["power_supply_technology"], out pst))
             {
                 PowerSupplyTechnology = (PowerSupplyTechnology) pst;
             }
 
             bool present;
-            Present = bool.TryParse(node["present"], out present) ? present : false;
+            Present = bool.TryParse(msg["present"], out present) ? present : false;
 
-            JSONNode voltageJson = node["cell_voltage"];
+            JSONNode voltageJson = msg["cell_voltage"];
             int count = voltageJson.Count;
             CellVoltage = new float[count];
             for (int i = 0; i < count; ++i)
@@ -106,10 +117,10 @@ namespace ROSBridgeLib.sensor_msgs
                 CellVoltage[i] = float.TryParse(voltageJson[i], out voltage) ? voltage : 0;
             }
 
-            Location = node["location"];
-            SerialNumber = node["serial_number"];
+            Location = msg["location"];
+            SerialNumber = msg["serial_number"];
         }
-
+        
         public override string ToString()
         {
             return $"{ROSMessageType} [header={Header}, voltage={Voltage}, current={Current}, charge={Charge}, capacity={Capacity}, design_capacity={DesignCapacity}, percentage={Percentage}, power_supply_status={(int)PowerSupplyStatus}, power_supply_health={(int)PowerSupplyHealth}, power_supply_technology={(int)PowerSupplyTechnology}, present={Present}, cell_voltage={CellVoltageToString()}, location={Location}, serial_number={SerialNumber}]";                                                                                               

@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Text;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 
 /* 
@@ -12,6 +11,13 @@ namespace ROSBridgeLib {
 		public class MultiArrayDimensionMsg : ROSBridgeMsg {
 			private string _label;
             private uint _size, _stride;
+
+			public override string ROSMessageType
+			{
+				get { return "std_msgs/MultiArrayDimension"; }
+			}
+			
+			public MultiArrayDimensionMsg() {}
 			
 			public MultiArrayDimensionMsg(JSONNode msg) {
 				_label = msg["label"];
@@ -23,10 +29,6 @@ namespace ROSBridgeLib {
 				_label = label;
                 _size = size;
                 _stride = stride;
-			}
-			
-			public static string GetMessageType() {
-				return "std_msgs/MultiArrayDimension";
 			}
 
 			public string GetLabel() {
@@ -41,8 +43,15 @@ namespace ROSBridgeLib {
                 return _stride;
             }
 
+			public override void Deserialize(JSONNode msg)
+			{
+				_label = msg["label"];
+				_size = uint.Parse(msg["size"]);
+				_stride = uint.Parse(msg["stride"]);
+			}
+
 			public override string ToString() {
-				return "MultiArrayDimension [label=" + _label + ", size=" + _size + ", stride = " + _stride + "]";
+				return ROSMessageType + " [label=" + _label + ", size=" + _size + ", stride = " + _stride + "]";
 			}
 			
 			public override string ToYAMLString() {

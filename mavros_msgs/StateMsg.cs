@@ -1,11 +1,10 @@
-﻿using System;
-using SimpleJSON;
+﻿using SimpleJSON;
 using ROSBridgeLib.std_msgs;
 using ROSBridgeLib.Core;
 
 namespace ROSBridgeLib.mavros_msgs
 {
-    public class StateMsg : Core.ROSBridgeMsg
+    public class StateMsg : ROSBridgeMsg
     {
         public HeaderMsg Header { get; private set; }
         public bool Connected { get; private set; }
@@ -14,6 +13,11 @@ namespace ROSBridgeLib.mavros_msgs
         public string Mode { get; private set; }
         public uint SystemStatus { get; private set; }
 
+        public override string ROSMessageType
+        {
+            get { return "mavros_msgs/State"; }
+        }
+        
         public StateMsg(){ }
 
         public StateMsg(JSONNode msg)
@@ -26,19 +30,24 @@ namespace ROSBridgeLib.mavros_msgs
             SystemStatus = uint.Parse(msg["system_status"]);
         }
 
-        public override string ROSMessageType
+        public StateMsg(HeaderMsg header, bool connected, bool armed, bool guided, string mode, uint systemStatus)
         {
-            get { return "mavros_msgs/State"; }
+            Header = header;
+            Connected = connected;
+            Armed = armed;
+            Guided = guided;
+            Mode = mode;
+            SystemStatus = systemStatus;
         }
 
-        public override void Deserialize(JSONNode node)
+        public override void Deserialize(JSONNode msg)
         {
-            Header = new HeaderMsg(node["header"]);
-            Connected = bool.Parse(node["connected"]);
-            Armed = bool.Parse(node["armed"]);
-            Guided = bool.Parse(node["guided"]);
-            Mode = node["mode"];
-            SystemStatus = uint.Parse(node["system_status"]);
+            Header = new HeaderMsg(msg["header"]);
+            Connected = bool.Parse(msg["connected"]);
+            Armed = bool.Parse(msg["armed"]);
+            Guided = bool.Parse(msg["guided"]);
+            Mode = msg["mode"];
+            SystemStatus = uint.Parse(msg["system_status"]);
         }
         
         public override string ToString()

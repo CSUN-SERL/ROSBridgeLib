@@ -1,7 +1,5 @@
-using System.Collections;
-using System.Text;
+using ROSBridgeLib.Core;
 using SimpleJSON;
-using ROSBridgeLib.geometry_msgs;
 
 /* 
  * @brief ROSBridgeLib
@@ -15,6 +13,13 @@ namespace ROSBridgeLib {
 			private double _y;
 			private double _z;
 			
+			public override string ROSMessageType
+			{
+				get { return "geometry_msgs/Vector3"; }
+			}
+			
+			public Vector3Msg() { }
+			
 			public Vector3Msg(JSONNode msg) {
 				_x = double.Parse(msg["x"]);
 				_y = double.Parse(msg["y"]);
@@ -25,10 +30,6 @@ namespace ROSBridgeLib {
 				_x = x;
 				_y = y;
 				_z = z;
-			}
-			
-			public static string GetMessageType() {
-				return "geometry_msgs/Vector3";
 			}
 			
 			public double GetX() {
@@ -43,9 +44,17 @@ namespace ROSBridgeLib {
 				return _z;
 			}
 			
-			public override string ToString() {
-				return "Vector3 [x=" + _x + ",  y="+ _y + ",  z=" + _z + "]";
+			public override void Deserialize(JSONNode msg)
+			{
+				_x = double.Parse(msg["x"]);
+				_y = double.Parse(msg["y"]);
+				_z = double.Parse(msg["z"]);
 			}
+
+			public override string ToString() {
+				return ROSMessageType + " [x=" + _x + ",  y="+ _y + ",  z=" + _z + "]";
+			}
+
 			
 			public override string ToYAMLString() {
 				return "{\"x\" : " + _x + ", \"y\" : " + _y + ", \"z\" : " + _z + "}";

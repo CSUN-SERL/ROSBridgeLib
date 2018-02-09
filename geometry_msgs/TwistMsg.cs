@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Text;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 
 /* 
@@ -12,7 +11,14 @@ namespace ROSBridgeLib {
 		public class TwistMsg : ROSBridgeMsg {
 			private Vector3Msg _linear;
 			private Vector3Msg _angular;
-			
+
+			public override string ROSMessageType
+			{
+				get { return "geometry_msgs/Twist"; }
+			}
+
+			public TwistMsg() { }
+
 			public TwistMsg(JSONNode msg) {
 				_linear = new Vector3Msg(msg["linear"]);
 				_angular = new Vector3Msg(msg["angular"]);
@@ -23,10 +29,6 @@ namespace ROSBridgeLib {
 				_angular = angular;
 			}
 			
-			public static string GetMessageType() {
-				return "geometry_msgs/Twist";
-			}
-			
 			public Vector3Msg GetLinear() {
 				return _linear;
 			}
@@ -35,9 +37,15 @@ namespace ROSBridgeLib {
 				return _angular;
 			}
 			
-			public override string ToString() {
-				return "Twist [linear=" + _linear.ToString() + ",  angular=" + _angular.ToString() + "]";
+			public override void Deserialize(JSONNode msg)
+			{
+				_linear = new Vector3Msg(msg["linear"]);
+				_angular = new Vector3Msg(msg["angular"]);
 			}
+
+			public override string ToString() {
+				return ROSMessageType + " [linear=" + _linear.ToString() + ",  angular=" + _angular.ToString() + "]";
+			} 
 			
 			public override string ToYAMLString() {
 				return "{\"linear\" : " + _linear.ToYAMLString() + ", \"angular\" : " + _angular.ToYAMLString() + "}";

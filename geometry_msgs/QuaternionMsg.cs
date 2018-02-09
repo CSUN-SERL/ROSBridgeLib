@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Text;
+﻿using ROSBridgeLib.Core;
 using SimpleJSON;
 
 /**
@@ -14,6 +13,13 @@ namespace ROSBridgeLib {
 		public class QuaternionMsg : ROSBridgeMsg {
 			private float _x, _y, _z, _w;
 
+			public override string ROSMessageType
+			{
+				get { return "geometry_msgs/Quaternion"; }
+			}
+			
+			public QuaternionMsg() { }
+			
 			public QuaternionMsg(JSONNode msg) {
 				_x = float.Parse(msg["x"]);
 				_y = float.Parse(msg["y"]);
@@ -26,10 +32,6 @@ namespace ROSBridgeLib {
 				_y = y;
 				_z = z;
 				_w = w;
-			}
-			
-			public static string getMessageType() {
-				return "geometry_msgs/Quaternion";
 			}
 			
 			public float GetX() {
@@ -48,10 +50,18 @@ namespace ROSBridgeLib {
 				return _w;
 			}
 			
-			public override string ToString() {
-				return "geometry_msgs/Quaternion [x=" + _x + ",  y=" + _y + ", z=" + _z + ", w=" + _w + "]";
+			public override void Deserialize(JSONNode msg)
+			{
+				_x = float.Parse(msg["x"]);
+				_y = float.Parse(msg["y"]);
+				_z = float.Parse(msg["z"]);
+				_w = float.Parse(msg["w"]);
 			}
-					
+
+			public override string ToString() {
+				return ROSMessageType + " [x=" + _x + ",  y=" + _y + ", z=" + _z + ", w=" + _w + "]";
+			}
+			
 			public override string ToYAMLString() {
 				return "{\"x\": " + _x + ", \"y\": " + _y + ", \"z\": " + _z + ", \"w\": " + _w + "}";
 			}

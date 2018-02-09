@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Text;
+using ROSBridgeLib.Core;
 using SimpleJSON;
 
 /* 
@@ -12,6 +11,13 @@ namespace ROSBridgeLib {
 		public class UInt32Msg : ROSBridgeMsg {
 			private uint _data;
 			
+			public override string ROSMessageType
+			{
+				get{ return "std_msgs/UInt32"; }
+			}
+			
+			public UInt32Msg() {}
+			
 			public UInt32Msg(JSONNode msg) {
 				_data = uint.Parse(msg);
 			}
@@ -20,18 +26,19 @@ namespace ROSBridgeLib {
 				_data = data;
 			}
 			
-			public static string GetMessageType() {
-				return "std_msgs/UInt32";
-			}
-			
 			public uint GetData() {
 				return _data;
 			}
 			
 			public override string ToString() {
-				return "UInt32 [data=" + _data + "]";
+				return ROSMessageType + " [data=" + _data + "]";
 			}
-			
+
+			public override void Deserialize(JSONNode msg)
+			{
+				_data = uint.Parse(msg);
+			}
+
 			public override string ToYAMLString() {
 				return "{\"data\" : " + _data + "}";
 			}

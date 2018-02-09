@@ -7,7 +7,7 @@ namespace ROSBridgeLib.Core
     public interface IMsg
     {
         string ROSMessageType { get; }
-        void Deserialize(JSONNode node);
+        void Deserialize(JSONNode msg);
         string ToYAMLString();
     }
 }

@@ -6,7 +6,7 @@ namespace ROSBridgeLib.std_msgs
     {
         public override string ROSMessageType { get { return "std_msgs/Empty;"; } }
         
-        public override void Deserialize(JSONNode node) { }
+        public override void Deserialize(JSONNode msg) { }
 
         public override string ToYAMLString()
         {
