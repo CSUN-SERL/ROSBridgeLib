@@ -62,6 +62,10 @@ namespace ROSBridgeLib {
                 return _row_step;
             }
 
+            public string GetEncoding() {
+                return _encoding;
+            }
+            
             public byte[] GetImage() {
                 return _data;
             }
