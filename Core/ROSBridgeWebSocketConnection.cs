@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Reflection;
-using System;
+using System.Diagnostics;
 using WebSocketSharp;
 using SimpleJSON;
-using UnityEngine;
 
  namespace ROSBridgeLib.Core
  {
@@ -58,6 +58,11 @@ using UnityEngine;
 		 
 	 }
 
+	 ~ROSBridgeWebSocketConnection()
+	 {
+		 Disconnect();
+	 }
+
 	 public ROSBridgePublisher GetPublisher(string topic)
 	 {
 		 ROSBridgePublisher publisher;
@@ -94,7 +99,7 @@ using UnityEngine;
 			 if (type != messageType)
 			 {
 				 throw new Exception(
-					 $"Topic: {topic} already exists for message type: {messageType}. You are attempting to {operation} same topic with message type {type}");
+					 $"Topic: {topic} already exists for message type: {messageType}. You are attempting to {operation} the same topic with message type {type}");
 			 }
 		 }
 	 }
@@ -102,7 +107,7 @@ using UnityEngine;
 	 public ROSBridgePublisher Advertise<T>(string topic) where T : IMsg
 	 {
 		 Type messageType = typeof(T);
-		 ThrowIfTopicExistsUnderDifferentType(topic, messageType, "advertise");
+		 ThrowIfTopicExistsUnderDifferentType(topic, messageType, "advertise on");
 
 		 ROSBridgePublisher publisher;
 		 if (!publishers.TryGetValue(topic, out publisher))
@@ -127,7 +132,7 @@ using UnityEngine;
 	 public ROSBridgeSubscriber<T> Subscribe<T>(string topic, ROSCallback<T> callback, int queueSize) where T : IMsg, new()
 	 {
 		 Type messageType = typeof(T);
-		 ThrowIfTopicExistsUnderDifferentType(topic, messageType, "subscribe");
+		 ThrowIfTopicExistsUnderDifferentType(topic, messageType, "subscribe to");
 		 
 		 ROSBridgeSubscriber subscriber;
 		 if (!subscribers.TryGetValue(topic, out subscriber))
@@ -211,7 +216,7 @@ using UnityEngine;
 		 
 		 if (string.IsNullOrEmpty(s))
 		 {
-			 Debug.Log("got an empty message");
+			 Debug.Print("got an empty message");
 			 return;	 
 		 }
 
@@ -226,12 +231,12 @@ using UnityEngine;
 		 }
 		 else if ("service_response".Equals(op))
 		 {
-			 Debug.Log("Got service response " + node.ToString());
+			 Debug.Print("Got service response " + node.ToString());
 			 _serviceName = node["service"];
 			 _serviceValues = (node["values"] == null) ? "" : node["values"].ToString();
 		 }
 		 else
-			 Debug.Log("Must write code here for other messages");
+			 Debug.Print("Must write code here for other messages");
 	 }
 	 
 	 public void Render()
@@ -256,7 +261,7 @@ using UnityEngine;
 		 if (_ws != null)
 		 {
 			 string s = ROSBridgeMsg.CallService(service, args);
-			 Debug.Log($"Sending: {s}");
+			 Debug.Print($"Sending: {s}");
 			 _ws.Send(s);
 		 }
 	 }
@@ -264,28 +269,28 @@ using UnityEngine;
 	 private void SendSubscribeOperation(ROSBridgeSubscriber subscriber)
 	 {
 		 string s = ROSBridgeMsg.Subscribe(subscriber.Topic, ((IMsg)Activator.CreateInstance(subscriber.MessageType)).ROSMessageType);
-		 Debug.Log($"Sending: {s}");
+		 Debug.Print($"Sending: {s}");
 		 _ws?.Send(s);
 	 }
 
 	 private void SendUnSubscribeOperation(ROSBridgeSubscriber subscriber)
 	 {
 		 string s = ROSBridgeMsg.UnSubscribe(subscriber.Topic);
-		 Debug.Log($"Sending: {s}");
+		 Debug.Print($"Sending: {s}");
 		 _ws?.Send(s);
 	 }
 	 
 	 private void SendAdvertiseOperation(ROSBridgePublisher subscriber)
 	 {
 		 string s = ROSBridgeMsg.Advertise(subscriber.Topic, ((IMsg)Activator.CreateInstance(subscriber.MessageType)).ROSMessageType);
-		 Debug.Log($"Sending: {s}");
+		 Debug.Print($"Sending: {s}");
 		 _ws?.Send(s);
 	 }
 	 
 	 private void SendUnAdvertiseOperation(ROSBridgePublisher publisher)
 	 {
 		 string s = ROSBridgeMsg.UnAdvertise(publisher.Topic);
-		 Debug.Log($"Sending: {s}");
+		 Debug.Print($"Sending: {s}");
 		 _ws?.Send(s);
 	 }
 	 
