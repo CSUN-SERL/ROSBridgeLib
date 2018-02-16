@@ -9,7 +9,7 @@
 
 namespace ROSBridgeLib {
 	namespace geometry_msgs {
-		public class PoseMsg : Core.ROSBridgeMsg {
+		public class PoseMsg : Core.ROSBridgeMessage {
 			public PointMsg _position;
 			public QuaternionMsg _orientation;
 

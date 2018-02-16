@@ -12,7 +12,7 @@ using ROSBridgeLib.std_msgs;
 
 namespace ROSBridgeLib {
 	namespace sensor_msgs {
-		public class CompressedImageMsg : ROSBridgeMsg {
+		public class CompressedImageMsg : ROSBridgeMessage {
 			private string _format;
 			private byte[] _data;
 			private HeaderMsg _header;

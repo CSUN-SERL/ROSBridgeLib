@@ -8,7 +8,7 @@ using SimpleJSON;
 
 namespace ROSBridgeLib {
 	namespace geometry_msgs {
-		public class TwistWithCovarianceMsg : ROSBridgeMsg {
+		public class TwistWithCovarianceMsg : ROSBridgeMessage {
 			private TwistMsg _twist;
 			private double[] _covariance = new double[36] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
 														   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 

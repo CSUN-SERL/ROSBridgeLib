@@ -11,7 +11,7 @@ using ROSBridgeLib.std_msgs;
 
 namespace ROSBridgeLib {
 	namespace sensor_msgs {
-		public class PointCloudMsg : ROSBridgeMsg {
+		public class PointCloudMsg : ROSBridgeMessage {
 			private HeaderMsg _header;
 			private uint _width, _height;
 			private uint _point_step, _row_step;

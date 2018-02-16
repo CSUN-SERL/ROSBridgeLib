@@ -4,14 +4,14 @@ using SimpleJSON;
 
 namespace ROSBridgeLib.Core
 {
-    public abstract class ROSBridgeSubscriber
+    public abstract class Subscriber
     {
         protected readonly string topic;
         protected readonly Type messageType;
         protected int queueSize;
         protected Queue<JSONNode> rawMessages; 
             
-        public event ROSCallback<IMsg> MessageRecieved;
+        public event ROSCallback<IMessage> MessageRecieved;
         
         public string Topic
         {
@@ -23,7 +23,7 @@ namespace ROSBridgeLib.Core
             get { return messageType; }
         }
         
-        public ROSBridgeSubscriber(string topic, int queueSize, Type messageType)
+        public Subscriber(string topic, int queueSize, Type messageType)
         {
             this.topic = topic;
             this.queueSize = queueSize;
@@ -31,12 +31,12 @@ namespace ROSBridgeLib.Core
             rawMessages = new Queue<JSONNode>(queueSize);
         }
         
-        public void Unsubscribe(ROSCallback<IMsg> callback)
+        public void Unsubscribe(ROSCallback<IMessage> callback)
         {
             MessageRecieved -= callback;
         }
 
-        public void Subscribe(ROSCallback<IMsg> callback)
+        public void Subscribe(ROSCallback<IMessage> callback)
         {
             MessageRecieved += callback;
         }
@@ -56,41 +56,15 @@ namespace ROSBridgeLib.Core
             if (rawMessages.Count == 0)
                 return;
 
-            IMsg msg = (IMsg)Activator.CreateInstance(messageType);
+            IMessage msg = (IMessage)Activator.CreateInstance(messageType);
             msg.Deserialize(rawMessages.Dequeue());
             
             ProcessMsg(msg);
         }
 
-        protected virtual void ProcessMsg(IMsg msg)
+        protected virtual void ProcessMsg(IMessage msg)
         {
             MessageRecieved?.Invoke(msg);
         }
-    }
-    
-    public class ROSBridgeSubscriber<T> : ROSBridgeSubscriber where T : IMsg
-    {
-        public new event ROSCallback<T> MessageRecieved;
-      
-        public ROSBridgeSubscriber(string topic, int queueSize) :
-            base(topic, queueSize, typeof(T))
-        { }
-        
-        public void Unsubscribe(ROSCallback<T> callback)
-        {
-            MessageRecieved -= callback;   
-        }
-
-        public void Subscribe(ROSCallback<T> callback)
-        {
-            MessageRecieved += callback;   
-        }
-        
-        protected override void ProcessMsg(IMsg msg)
-        {
-            base.ProcessMsg(msg);
-            MessageRecieved?.Invoke((T)msg);
-        }
-
     }
 }

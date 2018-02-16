@@ -8,7 +8,7 @@ using SimpleJSON;
 
 namespace ROSBridgeLib {
 	namespace std_msgs {
-        public class Int64MultiArrayMsg : ROSBridgeMsg {
+        public class Int64MultiArrayMsg : ROSBridgeMessage {
             private MultiArrayLayoutMsg _layout;
             private long[] _data;
 

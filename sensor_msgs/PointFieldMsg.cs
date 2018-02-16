@@ -18,7 +18,7 @@ using SimpleJSON;
 
 namespace ROSBridgeLib {
 	namespace sensor_msgs {
-		public class PointFieldMsg : ROSBridgeMsg {
+		public class PointFieldMsg : ROSBridgeMessage {
 			private string _name;
 			private uint _offset;
 			private byte _datatype;

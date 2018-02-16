@@ -16,7 +16,7 @@ namespace ROSBridgeLib
 {
 	namespace sensor_msgs
 	{
-		public class RangeMsg : ROSBridgeMsg
+		public class RangeMsg : ROSBridgeMessage
 		{
 			private HeaderMsg _header;
 

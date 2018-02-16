@@ -4,7 +4,7 @@ using SimpleJSON;
 
 namespace ROSBridgeLib.std_msgs
 {
-    public class Empty : ROSBridgeMsg
+    public class Empty : ROSBridgeMessage
     {
         public override string ROSMessageType { get { return "std_msgs/Empty;"; } }
         

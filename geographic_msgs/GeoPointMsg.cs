@@ -10,7 +10,7 @@ using ROSBridgeLib.Core;
 
 namespace ROSBridgeLib {
 	namespace geographic_msgs {
-		public class GeoPointMsg : ROSBridgeMsg {
+		public class GeoPointMsg : ROSBridgeMessage {
 			private float _latitude, _longitude, _altitude;
 
 			public override string ROSMessageType

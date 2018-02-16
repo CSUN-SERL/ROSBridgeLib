@@ -11,7 +11,7 @@ using SimpleJSON;
 
 namespace ROSBridgeLib {
 	namespace std_msgs {
-		public class HeaderMsg : ROSBridgeMsg {
+		public class HeaderMsg : ROSBridgeMessage {
 			private int _seq;
 			private TimeMsg _stamp;
 			private string _frame_id;

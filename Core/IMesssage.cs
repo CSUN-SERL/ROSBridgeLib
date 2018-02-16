@@ -2,9 +2,9 @@
 
 namespace ROSBridgeLib.Core
 {
-    public delegate void ROSCallback<in T>(T msg) where T : IMsg;
+    public delegate void ROSCallback<in T>(T msg) where T : IMessage;
     
-    public interface IMsg
+    public interface IMessage
     {
         string ROSMessageType { get; }
         void Deserialize(JSONNode msg);

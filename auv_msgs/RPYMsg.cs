@@ -11,7 +11,7 @@ using SimpleJSON;
 
 namespace ROSBridgeLib {
 	namespace auv_msgs {
-		public class RPYMsg : ROSBridgeMsg {
+		public class RPYMsg : ROSBridgeMessage {
 			private float _roll, _pitch, _yaw;
 
 			private static float Rad2Deg = 180 / (float)Math.PI;

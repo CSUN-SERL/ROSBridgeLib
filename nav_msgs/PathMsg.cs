@@ -13,7 +13,7 @@ using ROSBridgeLib.geometry_msgs;
 
 namespace ROSBridgeLib {
 	namespace nav_msgs {
-		public class PathMsg : ROSBridgeMsg {
+		public class PathMsg : ROSBridgeMessage {
 			public HeaderMsg _header;
 			public List<PoseStampedMsg> _poses;
 			

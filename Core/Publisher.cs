@@ -3,7 +3,7 @@ using WebSocketSharp;
 
 namespace ROSBridgeLib.Core
 {
-    public class ROSBridgePublisher
+    public class Publisher
     {
         protected WebSocket socket;
         protected string topic;
@@ -19,16 +19,17 @@ namespace ROSBridgeLib.Core
             get { return topic; }
         }
 
-        public ROSBridgePublisher(WebSocket socket, string topic, Type messageType)
+        public Publisher(WebSocket socket, string topic, Type messageType)
         {
             this.socket = socket;
             this.topic = topic;
             this.messageType = messageType;
         }
 
-        public void Publish(IMsg msg)
+        public Publisher Publish(IMessage msg)
         {
-            socket.Send(ROSBridgeMsg.Publish(topic, msg.ToYAMLString()));
+            socket.Send(ROSBridgeMessage.Publish(topic, msg.ToYAMLString()));
+            return this;
         }
     }
 }

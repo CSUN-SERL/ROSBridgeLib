@@ -11,7 +11,7 @@ using ROSBridgeLib.Core;
 
 namespace ROSBridgeLib {
 	namespace sensor_msgs {
-		public class PointCloud2Msg : ROSBridgeMsg {
+		public class PointCloud2Msg : ROSBridgeMessage {
 			private HeaderMsg _header;
 			private uint _height;
 			private uint _width;

@@ -41,7 +41,7 @@ namespace ROSBridgeLib.sensor_msgs
     /// <summary>
     /// Represent battery status from SYSTEM_STATUS
     /// </summary>
-    public class BatteryStateMsg : Core.ROSBridgeMsg
+    public class BatteryStateMsg : Core.ROSBridgeMessage
     {
         public HeaderMsg Header { get; private set; }
         public float Voltage { get; private set; } // [V]

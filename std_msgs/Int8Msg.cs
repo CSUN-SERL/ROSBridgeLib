@@ -8,7 +8,7 @@ using SimpleJSON;
 
 namespace ROSBridgeLib {
 	namespace std_msgs {
-		public class Int8Msg : ROSBridgeMsg {
+		public class Int8Msg : ROSBridgeMessage {
 			private sbyte _data;
 
 			public override string ROSMessageType

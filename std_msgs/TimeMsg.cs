@@ -16,7 +16,7 @@ using SimpleJSON;
 
 namespace ROSBridgeLib {
 	namespace std_msgs {
-		public class TimeMsg : ROSBridgeMsg {
+		public class TimeMsg : ROSBridgeMessage {
 			private int _secs, _nsecs;
 
 			public override String ROSMessageType

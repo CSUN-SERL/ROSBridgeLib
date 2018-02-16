@@ -10,7 +10,7 @@ using ROSBridgeLib.Core;
 
 namespace ROSBridgeLib {
 	namespace auv_msgs {
-		public class NEDMsg : ROSBridgeMsg {
+		public class NEDMsg : ROSBridgeMessage {
 			private float _north, _east, _depth;
 
 			public override string ROSMessageType

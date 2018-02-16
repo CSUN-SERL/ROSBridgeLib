@@ -8,7 +8,7 @@ using ROSBridgeLib.std_msgs;
 
 namespace ROSBridgeLib {
 	namespace geometry_msgs {
-		public class PoseStampedMsg : Core.ROSBridgeMsg {
+		public class PoseStampedMsg : Core.ROSBridgeMessage {
 			private HeaderMsg _header;
 			private PoseMsg _pose;
 			

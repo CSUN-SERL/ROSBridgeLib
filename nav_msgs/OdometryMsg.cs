@@ -10,7 +10,7 @@ using ROSBridgeLib.geometry_msgs;
 
 namespace ROSBridgeLib {
 	namespace nav_msgs {
-		public class OdometryMsg : ROSBridgeMsg {
+		public class OdometryMsg : ROSBridgeMessage {
 			public HeaderMsg _header;
 			public string _child_frame_id;
 			public PoseWithCovarianceMsg _pose;

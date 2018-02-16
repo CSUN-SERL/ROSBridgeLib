@@ -14,7 +14,7 @@ using UnityEngine.AI;
 
 namespace ROSBridgeLib {
 	namespace auv_msgs {
-		public class NavStsMsg : ROSBridgeMsg {
+		public class NavStsMsg : ROSBridgeMessage {
 			public HeaderMsg _header;
 			public DecimalLatLonMsg _global_position;
 			public DecimalLatLonMsg _origin;

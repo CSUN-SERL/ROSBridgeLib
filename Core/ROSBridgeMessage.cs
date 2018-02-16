@@ -22,17 +22,17 @@ namespace ROSBridgeLib.Core
  * @version 3.1
  */
 
-public abstract class ROSBridgeMsg : IMsg  {
+public abstract class ROSBridgeMessage : IMessage  {
 
-	public ROSBridgeMsg() {}
+	public ROSBridgeMessage() {}
 	
 	public abstract string ROSMessageType { get; }
 	public abstract void Deserialize(JSONNode msg);
 	public abstract string ToYAMLString();
 
-	public static ROSCallback<IMsg> ConvertCallback<T>(ROSCallback<T> callback) where T : IMsg
+	public static ROSCallback<IMessage> ConvertCallback<T>(ROSCallback<T> callback) where T : IMessage
 	{
-		return callback == null ? null : new ROSCallback<IMsg>(o => callback((T)o));
+		return callback == null ? null : new ROSCallback<IMessage>(o => callback((T)o));
 	}
 	
 	public static string Advertise(string messageTopic, string messageType) {

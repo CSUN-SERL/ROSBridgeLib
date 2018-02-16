@@ -10,7 +10,7 @@ using ROSBridgeLib.std_msgs;
 
 namespace ROSBridgeLib {
     namespace sensor_msgs {
-        public class ImageMsg : ROSBridgeMsg {
+        public class ImageMsg : ROSBridgeMessage {
             private HeaderMsg _header;
             private uint _height;
             private uint _width;

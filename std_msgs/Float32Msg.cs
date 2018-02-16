@@ -8,7 +8,7 @@ using ROSBridgeLib.Core;
 
 namespace ROSBridgeLib {
 	namespace std_msgs {
-		public class Float32Msg : ROSBridgeMsg {
+		public class Float32Msg : ROSBridgeMessage {
 			private float _data;
 
 			public override string ROSMessageType

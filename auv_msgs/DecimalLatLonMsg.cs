@@ -9,7 +9,7 @@ using ROSBridgeLib.Core;
 
 namespace ROSBridgeLib {
 	namespace auv_msgs {
-		public class DecimalLatLonMsg : ROSBridgeMsg {
+		public class DecimalLatLonMsg : ROSBridgeMessage {
 			private double _latitude, _longitude;
 
 			public override string ROSMessageType

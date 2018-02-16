@@ -4,7 +4,7 @@ using ROSBridgeLib.Core;
 
 namespace ROSBridgeLib.mavros_msgs
 {
-    public class StateMsg : ROSBridgeMsg
+    public class StateMsg : ROSBridgeMessage
     {
         public HeaderMsg Header { get; private set; }
         public bool Connected { get; private set; }

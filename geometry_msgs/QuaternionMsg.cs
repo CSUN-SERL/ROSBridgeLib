@@ -10,7 +10,7 @@ using SimpleJSON;
 
 namespace ROSBridgeLib {
 	namespace geometry_msgs {
-		public class QuaternionMsg : ROSBridgeMsg {
+		public class QuaternionMsg : ROSBridgeMessage {
 			private float _x, _y, _z, _w;
 
 			public override string ROSMessageType

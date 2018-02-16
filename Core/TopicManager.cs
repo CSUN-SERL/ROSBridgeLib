@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-
+using ROSBridgeLib.Core.Generic;
 using SimpleJSON;
 using WebSocketSharp;
 
@@ -12,43 +12,43 @@ namespace ROSBridgeLib.Core
     {
         private WebSocket socket;
         private Thread thread; // todo use Task instead
-        
-        private Dictionary<string, Type> allTopics;
-        private Dictionary<string, ROSBridgeSubscriber> subscribers;
-        private Dictionary<string, ROSBridgePublisher> publishers;
-        
-        private object _queueLock = new object();
-        
 
-        public TopicManager(WebSocket socket) 
+        private Dictionary<string, Type> allTopics;
+        private Dictionary<string, Subscriber> subscribers;
+        private Dictionary<string, Publisher> publishers;
+
+        private object _queueLock = new object();
+
+
+        public TopicManager(WebSocket socket)
         {
             this.socket = socket;
-            
+
             allTopics = new Dictionary<string, Type>();
-            subscribers = new Dictionary<string, ROSBridgeSubscriber>();
-            publishers = new Dictionary<string, ROSBridgePublisher>();
+            subscribers = new Dictionary<string, Subscriber>();
+            publishers = new Dictionary<string, Publisher>();
 
             this.socket.OnMessage += OnMessage;
         }
 
-        public ROSBridgePublisher GetPublisher(string topic)
+        public Publisher GetPublisher(string topic)
         {
-            ROSBridgePublisher publisher;
+            Publisher publisher;
             return publishers.TryGetValue(topic, out publisher) ? publisher : null;
         }
-	 
-        public ROSBridgeSubscriber<T> GetSubscriber<T>(string topic) where T: IMsg
+
+        public Subscriber<T> GetSubscriber<T>(string topic) where T : IMessage
         {
             ThrowIfTopicExistsUnderDifferentType(topic, typeof(T), "obtain");
-            return GetSubscriber(topic) as ROSBridgeSubscriber<T>;
+            return GetSubscriber(topic) as Subscriber<T>;
         }
-        
-        public ROSBridgeSubscriber GetSubscriber(string topic)
+
+        public Subscriber GetSubscriber(string topic)
         {
-            ROSBridgeSubscriber subscriber;
+            Subscriber subscriber;
             return subscribers.TryGetValue(topic, out subscriber) ? subscriber : null;
         }
-        
+
         public void Connect()
         {
             foreach (var sub in subscribers)
@@ -60,12 +60,12 @@ namespace ROSBridgeLib.Core
             {
                 SendAdvertiseOperation(pub.Value);
             }
-		 
+
             // todo use Task instead
             thread = new Thread(Run);
             thread.Start();
         }
-        
+
         /// <summary>
         /// Disconnect from the remote ros environment.
         /// </summary>
@@ -84,47 +84,52 @@ namespace ROSBridgeLib.Core
                 SendUnAdvertiseOperation(publisher.Value);
             }
         }
-        
-        public ROSBridgePublisher Advertise<T>(string topic) where T : IMsg
+
+        public Publisher Advertise<T>(string topic) where T : IMessage
         {
             Type messageType = typeof(T);
             ThrowIfTopicExistsUnderDifferentType(topic, messageType, "advertise on");
 
-            ROSBridgePublisher publisher;
+            Publisher publisher;
             if (!publishers.TryGetValue(topic, out publisher))
             {
-                publisher = new ROSBridgePublisher(socket, topic, messageType);
+                publisher = new Publisher(socket, topic, messageType);
                 publishers.Add(topic, publisher);
-                
+
                 CacheTopic(topic, messageType);
                 SendAdvertiseOperation(publisher);
             }
-		 
+
             return publisher;
         }
-	 
-        public ROSBridgeSubscriber<T> Subscribe<T>(string topic, ROSCallback<T> callback, int queueSize) where T : IMsg, new()
+
+        public Publisher Publish(string topic, IMessage msg)
+        {
+            return GetPublisher(topic)?.Publish(msg);
+        }
+
+        public Subscriber<T> Subscribe<T>(string topic, ROSCallback<T> callback, int queueSize = 10) where T : IMessage, new()
         {
             Type messageType = typeof(T);
             ThrowIfTopicExistsUnderDifferentType(topic, messageType, "subscribe to");
-		 
-            ROSBridgeSubscriber subscriber;
+
+            Subscriber subscriber;
             if (!subscribers.TryGetValue(topic, out subscriber))
             {
-                subscriber = new ROSBridgeSubscriber<T>(topic, queueSize);
+                subscriber = new Subscriber<T>(topic, queueSize);
                 subscribers.Add(topic, subscriber);
-                
+
                 CacheTopic(topic, messageType);
                 SendSubscribeOperation(subscriber);
             }
 
-            var sub = (ROSBridgeSubscriber<T>) subscriber;
+            var sub = (Subscriber<T>)subscriber;
 
             sub.Subscribe(callback);
-		 
+
             return sub;
         }
-	 
+
         private void CacheTopic(string topic, Type messageType)
         {
             if (!allTopics.ContainsKey(topic))
@@ -132,7 +137,7 @@ namespace ROSBridgeLib.Core
                 allTopics.Add(topic, messageType);
             }
         }
-        
+
         private void ThrowIfTopicExistsUnderDifferentType(string topic, Type type, string operation)
         {
             Type messageType;
@@ -145,7 +150,7 @@ namespace ROSBridgeLib.Core
                 }
             }
         }
-        
+
         private void Run()
         {
             while (true)
@@ -155,7 +160,7 @@ namespace ROSBridgeLib.Core
                 Render();
             }
         }
-        
+
         private void Render()
         {
             lock (_queueLock)
@@ -163,53 +168,53 @@ namespace ROSBridgeLib.Core
                 foreach (var sub in subscribers)
                 {
                     sub.Value.ProcessOldestMsg();
-                }	 
+                }
             }
         }
 
         private void OnMessage(object sender, MessageEventArgs args)
         {
-            string s = args.Data;
-		 
-            if (string.IsNullOrEmpty(s))
-                return;	 
+            string data = args.Data;
 
-            JSONNode node = JSONNode.Parse(s);
-            string op = node["op"];
-            
-            if (op == "publish")
+            if (string.IsNullOrEmpty(data))
+                return;
+
+            JSONNode node = JSONNode.Parse(data);
+            string operation = node["op"];
+
+            if (operation == "publish")
             {
-                lock(_queueLock)
+                lock (_queueLock)
                 {
                     GetSubscriber(node["topic"])?.EnqueueRawMsg(node["msg"]);
                 }
             }
         }
-        
-        private void SendSubscribeOperation(ROSBridgeSubscriber subscriber)
+
+        private void SendSubscribeOperation(Subscriber subscriber)
         {
-            string s = ROSBridgeMsg.Subscribe(subscriber.Topic, ((IMsg)Activator.CreateInstance(subscriber.MessageType)).ROSMessageType);
+            string s = ROSBridgeMessage.Subscribe(subscriber.Topic, ((IMessage)Activator.CreateInstance(subscriber.MessageType)).ROSMessageType);
             Debug.Print($"Sending: {s}");
             socket.Send(s);
         }
 
-        private void SendUnSubscribeOperation(ROSBridgeSubscriber subscriber)
+        private void SendUnSubscribeOperation(Subscriber subscriber)
         {
-            string s = ROSBridgeMsg.UnSubscribe(subscriber.Topic);
+            string s = ROSBridgeMessage.UnSubscribe(subscriber.Topic);
             Debug.Print($"Sending: {s}");
             socket.Send(s);
         }
-	 
-        private void SendAdvertiseOperation(ROSBridgePublisher subscriber)
+
+        private void SendAdvertiseOperation(Publisher subscriber)
         {
-            string s = ROSBridgeMsg.Advertise(subscriber.Topic, ((IMsg)Activator.CreateInstance(subscriber.MessageType)).ROSMessageType);
+            string s = ROSBridgeMessage.Advertise(subscriber.Topic, ((IMessage)Activator.CreateInstance(subscriber.MessageType)).ROSMessageType);
             Debug.Print($"Sending: {s}");
             socket.Send(s);
         }
-	 
-        private void SendUnAdvertiseOperation(ROSBridgePublisher publisher)
+
+        private void SendUnAdvertiseOperation(Publisher publisher)
         {
-            string s = ROSBridgeMsg.UnAdvertise(publisher.Topic);
+            string s = ROSBridgeMessage.UnAdvertise(publisher.Topic);
             Debug.Print($"Sending: {s}");
             socket.Send(s);
         }
