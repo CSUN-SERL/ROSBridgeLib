@@ -9,7 +9,7 @@ using SimpleJSON;
 namespace ROSBridgeLib.Core
 {
 
-	public class ROSBridgeWebSocketConnection
+	public class ROSBridgeConnection
 	{
 		private string host;
 		private int port;
@@ -40,14 +40,14 @@ namespace ROSBridgeLib.Core
 		/// Make a connection to a host/port. 
 		/// This does not actually start the connection, use Connect to do that.
 		/// </summary>
-		public ROSBridgeWebSocketConnection(string host, int port)
+		public ROSBridgeConnection(string host, int port)
 		{
 			this.host = host;
 			this.port = port;
 			this.socket = null;
 		}
 
-		~ROSBridgeWebSocketConnection()
+		~ROSBridgeConnection()
 		{
 			Disconnect();
 		}
