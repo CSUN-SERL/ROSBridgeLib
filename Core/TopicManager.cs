@@ -62,8 +62,8 @@ namespace ROSBridgeLib.Core
             }
 
             // todo use Task instead
-            //thread = new Thread(Run);
-            //thread.Start();
+            thread = new Thread(Run);
+            thread.Start();
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace ROSBridgeLib.Core
         public void Disconnect()
         {
             // todo use Task instead
-            //thread.Abort();
+            thread.Abort();
 
             foreach (var subscriber in subscribers)
             {
@@ -156,7 +156,7 @@ namespace ROSBridgeLib.Core
             while (true)
             {
                 // todo use Task instead
-                //Thread.Sleep(10);
+                Thread.Sleep(10);
                 Render();
             }
         }
